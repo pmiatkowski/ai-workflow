@@ -1,16 +1,8 @@
-# Prompt: define-tech-stack
-
-## Purpose
-Define or update the global tech stack configuration through guided questions.
-
-## Usage
-```
-User: /define-tech-stack          # Create or update tech stack
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Define or update the global tech stack configuration through guided questions.
+---
 
 You are a technical architect helping document the project's tech stack. Your goal is to create a clear, comprehensive tech-stack.md file through sequential questions.
 
@@ -19,6 +11,7 @@ You are a technical architect helping document the project's tech stack. Your go
 Check if `.ai-workflow/memory/tech-stack.md` exists.
 
 **If exists:**
+
 ```
 ⚠ Tech stack already defined at .ai-workflow/memory/tech-stack.md
 
@@ -31,6 +24,7 @@ Your choice?
 ```
 
 **If user chooses A (Update):**
+
 1. Read existing `.ai-workflow/memory/tech-stack.md`
 2. Ask: "What would you like to update? (e.g., add new service, update version, change framework)"
 3. Wait for user's specific update request
@@ -39,9 +33,11 @@ Your choice?
 6. Confirm completion
 
 **If user chooses B or no file exists:**
+
 - Proceed to full tech stack definition (step 2)
 
 **If user chooses C:**
+
 ```
 ✓ Cancelled. No changes made.
 ```
@@ -51,6 +47,7 @@ Your choice?
 Use the **sequential one-by-one format** (consistent with /clarify). Ask 7+ questions to gather comprehensive tech stack information.
 
 **Question 1/7+**
+
 ```
 What is your primary programming language and version?
 
@@ -66,6 +63,7 @@ You can select A, B, or C, or provide your own answer (e.g., "TypeScript 5.3, No
 ```
 
 **Question 2/7+**
+
 ```
 What frontend framework (if any) are you using?
 
@@ -81,6 +79,7 @@ You can select A, B, or C, or provide specifics (e.g., "React 19 with Vite 5").
 ```
 
 **Question 3/7+**
+
 ```
 What backend framework or runtime are you using?
 
@@ -96,6 +95,7 @@ You can select A, B, or C, or provide specifics (e.g., "Express.js 5 with TypeSc
 ```
 
 **Question 4/7+**
+
 ```
 What database(s) are you using?
 
@@ -111,6 +111,7 @@ You can select A, B, or C, or provide specifics (e.g., "PostgreSQL 16 + Redis ca
 ```
 
 **Question 5/7+**
+
 ```
 What external services or APIs are you integrating with?
 
@@ -126,6 +127,7 @@ You can select or provide a list of services (e.g., "Auth0 for authentication, S
 ```
 
 **Question 6/7+**
+
 ```
 Where is your application hosted/deployed?
 
@@ -141,6 +143,7 @@ You can select or provide specifics (e.g., "AWS ECS with RDS and CloudFront").
 ```
 
 **Question 7/7+**
+
 ```
 What testing frameworks are you using?
 
@@ -160,6 +163,7 @@ You can select or provide specifics (e.g., "Vitest for unit tests, Playwright fo
 After question 7, ask targeted follow-ups based on previous answers:
 
 **If frontend framework mentioned (Q2):**
+
 ```
 Follow-up: What state management library are you using?
 
@@ -173,6 +177,7 @@ You can select or provide specifics.
 ```
 
 **If cloud provider mentioned (Q6):**
+
 ```
 Follow-up: What CI/CD pipeline are you using?
 
@@ -186,6 +191,7 @@ You can select or provide specifics.
 ```
 
 **If backend framework mentioned (Q3):**
+
 ```
 Follow-up: What API style are you using?
 
@@ -199,6 +205,7 @@ You can select or provide specifics.
 ```
 
 **General follow-up:**
+
 ```
 Follow-up: Are there any other important technologies, tools, or constraints to document?
 
@@ -296,6 +303,7 @@ After collecting all answers, create `.ai-workflow/memory/tech-stack.md` using t
 ```
 
 **Content rules:**
+
 - Use "TBD" for planned but not-yet-implemented technologies
 - Use "N/A" or omit optional sections if not applicable
 - Include version numbers where provided
@@ -303,6 +311,7 @@ After collecting all answers, create `.ai-workflow/memory/tech-stack.md` using t
 - If information is missing or unclear, use placeholder text that prompts future updates
 
 **File creation:**
+
 1. Ensure `.ai-workflow/memory/` directory exists
 2. Write content to `.ai-workflow/memory/tech-stack.md`
 3. If update mode, preserve information not being changed
@@ -332,6 +341,7 @@ Next steps:
 ```
 
 **If update mode:**
+
 ```
 ✓ Updated .ai-workflow/memory/tech-stack.md
 

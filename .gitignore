@@ -1,3 +1,4 @@
 .vscode/*.code-workspace
 .claude/settings.local.json
 **/nul
+**/__pycache__

@@ -1,17 +1,8 @@
-# Prompt: plan-fix
-
-## Purpose
-Create a lightweight fix implementation checklist.
-
-## Usage
-```
-User: /plan-fix           # Uses current context
-User: /plan-fix {bug-name} # Explicit bug
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Create a lightweight fix implementation checklist.
+---
 
 You are creating a simple fix plan checklist.
 
@@ -33,7 +24,7 @@ To plan a bug fix:
   /plan-fix
 ```
 
-4. If no current context:
+1. If no current context:
 
 ```
 ⚠ No bug specified and no current context set.
@@ -48,6 +39,7 @@ Please either:
 Check if `.ai-workflow/bugs/{name}/triage.md` exists.
 
 If not found:
+
 ```
 ⚠ Bug must be triaged first.
 
@@ -93,12 +85,14 @@ Create `.ai-workflow/bugs/{name}/fix-plan.md`:
 ### 4. Update State
 
 Update `.ai-workflow/bugs/{bug-name}/state.yml`:
+
 - Change `status: triaged` → `status: fixing`
 - Update `updated: {today}`
 
 ### 5. Next Steps
 
 Suggest:
+
 ```
 ✓ Fix plan created: {bug-name}
 
@@ -111,6 +105,7 @@ Ready to implement! The checklist is in:
 ## Example
 
 **User:**
+
 ```
 /plan-fix login-timeout
 ```
@@ -145,6 +140,7 @@ Simple
 ```
 
 **AI responds:**
+
 ```
 ✓ Fix plan created: login-timeout
 

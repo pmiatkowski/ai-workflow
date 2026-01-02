@@ -1,7 +1,8 @@
-# Prompt: execute
-
-## Purpose
-Execute implementation plan tasks while tracking phase progress.
+---
+agent: agent
+description:
+  Execute implementation plan tasks while tracking phase progress.
+---
 
 ## Important: This Is Implementation Only
 
@@ -27,6 +28,7 @@ Your role is to execute the tasks defined in the plan, nothing more.
 After completing each phase (or all phases), return control to the user.
 
 ## Usage
+
 ```
 User: /execute                    # Uses current context
 User: /execute {feature-name}     # Explicit feature
@@ -56,7 +58,7 @@ To work with a feature:
   /execute
 ```
 
-4. If no current context:
+1. If no current context:
 
 ```
 ⚠ No feature specified and no current context set.
@@ -75,6 +77,7 @@ Check if `.ai-workflow/features/{name}/` exists.
 Check `.ai-workflow/features/{name}/implementation-plan/plan.md` exists.
 
 If missing:
+
 ```
 ⚠ Implementation plan not found for '{feature-name}'.
 
@@ -134,6 +137,7 @@ If user selects Option 1:
 **Step 1: Start phase**
 
 Execute:
+
 ```bash
 python .ai-workflow/scripts/update-plan-state.py {feature-name} start-phase {N}
 ```
@@ -192,6 +196,7 @@ For each task in the phase:
 **When tasks are ambiguous:**
 
 Pause and ask user:
+
 ```
 ⚠ Task {N.X} is ambiguous: "{task description}"
 
@@ -203,6 +208,7 @@ Please provide guidance.
 **When encountering blockers:**
 
 Stop and report:
+
 ```
 ⚠ Blocker encountered in Task {N.X}
 
@@ -246,6 +252,7 @@ If user selects Option 2:
 **Step 1: Start plan execution**
 
 If `status` is "planning":
+
 ```bash
 python .ai-workflow/scripts/update-plan-state.py {feature-name} start-plan
 ```
@@ -255,6 +262,7 @@ python .ai-workflow/scripts/update-plan-state.py {feature-name} start-plan
 For each phase (starting from `current_phase`):
 
 1. If phase not already `in-progress`, start it:
+
    ```bash
    python .ai-workflow/scripts/update-plan-state.py {feature-name} start-phase {N}
    ```
@@ -262,6 +270,7 @@ For each phase (starting from `current_phase`):
 2. Execute phase tasks (same as 5A Step 4)
 
 3. Complete phase:
+
    ```bash
    python .ai-workflow/scripts/update-plan-state.py {feature-name} complete-phase {N}
    ```

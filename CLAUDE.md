@@ -11,6 +11,7 @@ The AI Feature Workflow is a structured, agent-agnostic system for adding featur
 ### Hybrid Prompt-Script Model
 
 The system uses a hybrid approach where:
+
 - **Prompts** (`.ai-workflow/prompts/*.md`) contain AI instructions for cognitive tasks (Q&A, synthesis, analysis)
 - **Scripts** (`.ai-workflow/scripts/*.py`) handle deterministic file system operations
 - **AI agents** read prompts, invoke scripts when needed, and guide users through the workflow
@@ -21,16 +22,16 @@ The system uses a hybrid approach where:
 .ai-workflow/
 ├── config.yml              # Central configuration with workflow types
 ├── prompts/               # AI instruction templates
-│   ├── add.md             # Unified /add command with AI classification
-│   ├── add-context.md
-│   ├── clarify.md
-│   ├── create-prd.md
-│   ├── update-feature.md
-│   ├── define-implementation-plan.md
-│   ├── execute.md         # Execute implementation plan
-│   ├── define-idea.md     # Idea refinement and exploration
-│   ├── triage-bug.md      # Bug diagnosis and root cause
-│   └── plan-fix.md        # Lightweight bug fix planning
+│   ├── add.prompt.md             # Unified /add command with AI classification
+│   ├── add-context.prompt.md
+│   ├── clarify.prompt.md
+│   ├── create-prd.prompt.md
+│   ├── update-feature.prompt.md
+│   ├── define-implementation-plan.prompt.md
+│   ├── execute.prompt.md         # Execute implementation plan
+│   ├── define-idea.prompt.md     # Idea refinement and exploration
+│   ├── triage-bug.prompt.md      # Bug diagnosis and root cause
+│   └── plan-fix.prompt.md        # Lightweight bug fix planning
 └── scripts/               # Python utilities
     ├── config.py          # Config loader with workflow type support
     ├── init-workflow.py   # Generic workflow initialization (feature/bug/etc.)
@@ -104,11 +105,13 @@ The system uses a hybrid approach where:
 ### Configuration System
 
 **Config Loader** (`.ai-workflow/scripts/config.py`):
+
 - Auto-discovers `config.yml` by walking up directory tree
 - Falls back to defaults if PyYAML not installed
 - Supports future polyglot script execution (bash/powershell)
 
 **Key Config Paths**:
+
 - `paths.features`: Location of feature folders (default: `.ai-workflow/features`)
 - `paths.bugs`: Location of bug folders (default: `.ai-workflow/bugs`)
 - `paths.ideas`: Location of idea folders (default: `.ai-workflow/ideas`)
@@ -118,6 +121,7 @@ The system uses a hybrid approach where:
 - `defaults.workflow_type`: Default workflow type (default: `feature`)
 
 **Workflow Types**:
+
 - `workflow_types.feature`: Feature workflow configuration (states, artifacts, classification keywords)
 - `workflow_types.bug`: Bug workflow configuration (simplified, faster process)
 - `workflow_types.idea`: Idea workflow configuration (pre-workflow exploration and refinement)
@@ -125,6 +129,7 @@ The system uses a hybrid approach where:
 **Note**: Features, bugs, and ideas are stored in separate folders to maintain clear organization of workflow artifacts.
 
 **Clarification Settings** (`clarification` section):
+
 - `format_version`: Version of clarification format (2.0 = sequential)
 - `default_question_count`: Default number of questions to plan (default: 5)
 - `allow_followups`: Enable dynamic follow-up questions (default: true)
@@ -190,6 +195,7 @@ allow_followups: true
 ```
 
 **Metadata Fields:**
+
 - `format_version`: "2.0" indicates sequential format
 - `round_type`: "sequential" (vs legacy batch format)
 - `planned_questions`: Total number of questions planned for this round
@@ -199,11 +205,13 @@ allow_followups: true
 ### Resumption Logic
 
 If a clarification session is interrupted, the AI can resume by:
+
 1. Reading the round file
 2. Parsing metadata to find `current_question`
 3. Continuing from `current_question + 1`
 
 Example:
+
 ```
 Resuming clarifications/round-01 (continuing from Question 3/5)...
 
@@ -214,6 +222,7 @@ Question 4/5+
 ### Hybrid Question Approach
 
 The system uses a **hybrid approach**:
+
 - AI plans initial questions upfront (e.g., 5 questions)
 - Can add follow-up questions dynamically based on answers
 - Progress shown as "Question 3/5+" (the "+" indicates potential additional questions)
@@ -223,16 +232,19 @@ The system uses a **hybrid approach**:
 Options are generated based on **common industry patterns** (priority) and different solution approaches (secondary):
 
 **For Features (/clarify):**
+
 - Research typical solutions from similar projects
 - Check context.md for tech stack hints
 - Present 3 most common approaches with trade-offs
 
 **For Ideas (/define-idea):**
+
 - Present problem/solution scenarios
 - Use evidence levels (strong/moderate/assumption-based)
 - Support exploration without being judgmental
 
 **For Bugs (/triage-bug):**
+
 - Present diagnostic scenarios
 - Use common failure patterns
 - Help narrow down root cause
@@ -247,6 +259,7 @@ Options are generated based on **common industry patterns** (priority) and diffe
 ### Examples
 
 **Feature Clarification (/clarify):**
+
 ```
 Question 1/5+
 
@@ -266,6 +279,7 @@ You can select A, B, or C, or provide your own answer.
 ```
 
 **Idea Refinement (/define-idea Round 1):**
+
 ```
 Question 1/5+
 
@@ -284,6 +298,7 @@ You can select A, B, or C, or provide your own answer.
 ```
 
 **Bug Triage (/triage-bug):**
+
 ```
 Question 1/3
 
@@ -313,11 +328,13 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 | `/add {description}` | Prompt→Script | Add work item (AI classifies as feature/bug) | `init-workflow.py` |
 
 **AI Classification:**
+
 - **Bug keywords**: fix, bug, error, broken, crash, issue, failing, timeout → Creates bug
 - **Feature keywords**: add, implement, create, allow, enable, support → Creates feature
 - **Default**: If unclear, classifies as feature
 
 **Examples:**
+
 ```
 /add Fix timeout on login page           → Bug
 /add Allow users to reset password       → Feature
@@ -397,6 +414,7 @@ clarifying → prd-draft → prd-approved → planning → in-progress
 ```
 
 **state.yml** tracks:
+
 - `workflow_type`: Type of workflow (feature)
 - `name`: Item name (kebab-case)
 - `status`: Current state
@@ -412,6 +430,7 @@ reported → triaged → fixing → resolved → closed
 ```
 
 **state.yml** tracks:
+
 - `workflow_type`: Type of workflow (bug)
 - `name`: Bug name (kebab-case)
 - `status`: Current state
@@ -427,6 +446,7 @@ exploring → refined → shelved → converted
 ```
 
 **state.yml** tracks:
+
 - `workflow_type`: Type of workflow (idea)
 - `name`: Idea name (kebab-case)
 - `status`: Current state
@@ -437,6 +457,7 @@ exploring → refined → shelved → converted
 ### Implementation Plan States
 
 **plan-state.yml** tracks:
+
 - `status`: Plan status (pending/in-progress/completed)
 - `current_phase`: Phase number being worked on
 - `phases`: List of phase identifiers
@@ -498,18 +519,22 @@ Commands validate workflow types automatically:
 ### Best Practices
 
 **Single Feature/Bug Focus:**
+
 - Current context works best when focusing on one item at a time
 - The system auto-updates when you create new items with `/add`
 
 **Multiple Workflows:**
+
 - When working on multiple items simultaneously, use explicit parameters
 - Example: `/clarify feature-a` while current context is `feature-b`
 
 **Context Switching:**
+
 - Use `/set-current {name}` to switch between workflows
 - Explicit parameters always override current context
 
 **Multi-Terminal Usage:**
+
 - Current context is per-workspace (stored in `.ai-workflow/memory/`)
 - Last write wins if multiple terminals modify the same workspace
 - Use explicit parameters for parallel work across terminals
@@ -529,6 +554,7 @@ Commands validate workflow types automatically:
 PRDs follow a strict template enforced by `create-prd.md`:
 
 **Required Sections**:
+
 - Overview (one-paragraph summary)
 - Problem Statement
 - Goals (measurable if possible)
@@ -539,9 +565,11 @@ PRDs follow a strict template enforced by `create-prd.md`:
 - Open Questions (or "None")
 
 **Optional Sections**:
+
 - User Stories
 
 **Rules**:
+
 - Use "TBD" if information missing—never omit sections
 - Focus on *what*, not *how* (avoid implementation details)
 - Synthesize from clarifications, don't just copy
@@ -606,9 +634,11 @@ scripts/
 ## Dependencies
 
 **Required**:
+
 - Python 3.6+
 
 **Optional**:
+
 - PyYAML (`pip install pyyaml`) — for config loading; falls back to defaults if missing
 
 ## Workflow Comparison

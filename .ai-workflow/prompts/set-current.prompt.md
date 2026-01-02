@@ -1,18 +1,8 @@
-# Prompt: set-current
-
-## Purpose
-Manually set the current workflow context (feature or bug).
-
-## Usage
-```
-User: /set-current {name}
-User: /set-current {name} --type feature
-User: /set-current {name} --type bug
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Manually set the current workflow context (feature or bug).
+---
 
 You are setting the current workflow context that will be used by other commands when no explicit name is provided.
 
@@ -21,6 +11,7 @@ You are setting the current workflow context that will be used by other commands
 Extract workflow name from user message.
 
 If missing:
+
 ```
 Please specify which workflow to set as current:
 
@@ -34,11 +25,13 @@ Examples:
 ### 2. Execute Set-Current Script
 
 Run:
+
 ```bash
 python .ai-workflow/scripts/set-current.py "{name}"
 ```
 
 Or with explicit type:
+
 ```bash
 python .ai-workflow/scripts/set-current.py "{name}" --type feature
 python .ai-workflow/scripts/set-current.py "{name}" --type bug
@@ -47,6 +40,7 @@ python .ai-workflow/scripts/set-current.py "{name}" --type bug
 ### 3. Confirm to User
 
 **On success:**
+
 ```
 ✓ Current {type} set to: {name}
 
@@ -58,6 +52,7 @@ Next steps:
 ```
 
 **On error (not found):**
+
 ```
 ✗ Workflow '{name}' not found.
 
@@ -73,11 +68,13 @@ Create it first: /add "{description}"
 User: `/set-current user-auth`
 
 AI executes:
+
 ```bash
 python .ai-workflow/scripts/set-current.py "user-auth"
 ```
 
 AI responds:
+
 ```
 ✓ Current feature set to: user-auth
 
@@ -93,11 +90,13 @@ Next steps:
 User: `/set-current login-timeout`
 
 AI executes:
+
 ```bash
 python .ai-workflow/scripts/set-current.py "login-timeout"
 ```
 
 AI responds:
+
 ```
 ✓ Current bug set to: login-timeout
 

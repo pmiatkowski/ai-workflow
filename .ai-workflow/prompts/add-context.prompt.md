@@ -1,19 +1,8 @@
-# Prompt: add-context
-
-## Purpose
-Add or update codebase and business context for a workflow (feature or bug).
-
-## Usage
-```
-User: /add-context                    # Uses current context
-User: /add-context {workflow-name}     # Explicit workflow
-```
-
-Then user provides context (code snippets, file references, business rules, etc.)
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Add or update codebase and business context for a workflow (feature or bug).
+---
 
 You are helping the user document relevant context for a workflow. Your goal is to organize provided information into a structured `context.md` file.
 
@@ -41,6 +30,7 @@ Example:
 Check if `.ai-workflow/features/{name}/` or `.ai-workflow/bugs/{name}/` exists.
 
 If not found:
+
 ```
 ✗ Workflow '{name}' not found.
 
@@ -108,6 +98,7 @@ Take user's input and organize into `context.md` structure:
 <!-- Any other relevant context -->
 
 {notes}
+
 ```
 
 ### 5. Merge or Replace
@@ -115,11 +106,13 @@ Take user's input and organize into `context.md` structure:
 If context.md already has content:
 
 ```
+
 context.md already has content. How should I proceed?
 
 1. **Merge** — Add new context to existing sections
 2. **Replace** — Overwrite with new context
 3. **Cancel** — Keep existing, don't change
+
 ```
 
 ### 6. Save and Confirm
@@ -127,16 +120,20 @@ context.md already has content. How should I proceed?
 After saving:
 
 ```
+
 ✓ Updated context.md
 
 Added:
-  - {X} relevant files
-  - {Y} code snippets
-  - {summary of other additions}
+
+- {X} relevant files
+- {Y} code snippets
+- {summary of other additions}
 
 Next steps:
-  - Run /add-context again to add more
-  - Run /clarify to start requirements clarification
+
+- Run /add-context again to add more
+- Run /clarify to start requirements clarification
+
 ```
 
 ---
@@ -145,6 +142,7 @@ Next steps:
 
 **User:**
 ```
+
 /add-context user-auth
 
 Here's what's relevant:
@@ -154,11 +152,13 @@ We have an existing User model at src/models/user.ts that has email and password
 The auth should use our existing Redis setup for sessions - config is in src/config/redis.ts.
 
 Business rules:
+
 - Passwords must be 8+ chars
 - Email must be verified before login (we have isVerified field)
 - Max 5 login attempts per hour
 
 We're using Express + TypeScript.
+
 ```
 
 **AI saves to `context.md`:**
@@ -190,6 +190,7 @@ We're using Express + TypeScript.
 ```
 
 **AI responds:**
+
 ```
 ✓ Updated context.md
 

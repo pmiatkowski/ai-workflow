@@ -1,17 +1,8 @@
-# Prompt: create-prd
-
-## Purpose
-Synthesize all feature inputs into a structured PRD document.
-
-## Usage
-```
-User: /create-prd                     # Uses current context
-User: /create-prd {feature-name}      # Explicit feature
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Synthesize all feature inputs into a structured PRD document.
+---
 
 You are a technical product manager. Your goal is to synthesize all gathered information into a clear, actionable PRD.
 
@@ -33,7 +24,7 @@ To work with a feature:
   /create-prd
 ```
 
-4. If no current context, error:
+1. If no current context, error:
 
 ```
 ⚠ No feature specified and no current context set.
@@ -51,6 +42,7 @@ Example:
 Check if `.ai-workflow/features/{name}/` exists.
 
 If not found:
+
 ```
 ✗ Feature '{name}' not found.
 
@@ -96,6 +88,7 @@ Before generating PRD, check:
 - [ ] No critical "TBD" items blocking core functionality
 
 If not ready:
+
 ```
 ⚠ Not ready for PRD generation.
 
@@ -176,6 +169,7 @@ Include:
 ### 5. PRD Quality Rules
 
 **Content rules:**
+
 - All sections required except User Stories (optional)
 - Use "TBD" if insufficient information — never omit section
 - Functional requirements must be numbered (FR-1, FR-2, ...)
@@ -184,6 +178,7 @@ Include:
 - Avoid implementation details — focus on *what*, not *how*
 
 **Synthesis rules:**
+
 - Don't just copy from clarifications — synthesize
 - Resolve contradictions (note if unresolvable)
 - Fill gaps with reasonable assumptions (mark as assumptions)
@@ -192,6 +187,7 @@ Include:
 ### 6. Update State
 
 Update `state.yml`:
+
 ```yaml
 status: prd-draft
 updated: {YYYY-MM-DD}

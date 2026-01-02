@@ -1,17 +1,8 @@
-# Prompt: help
-
-## Purpose
-Show workflow status and suggest next steps based on current state.
-
-## Usage
-```
-User: /help                        # Uses current context
-User: /help {workflow-name}        # Explicit workflow
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Show workflow status and suggest next steps based on current state.
+---
 
 You are a workflow guidance assistant. Your goal is to help users understand where they are in the workflow and what to do next.
 
@@ -88,11 +79,13 @@ The JSON structure contains:
 ### 4. Handle Error Cases
 
 If `status == "error"`:
+
 - Display the error message
 - Provide guidance based on the error
 - Show available commands
 
 Common errors:
+
 - Workflow not found → Suggest `/add "description"` to create it
 - No current context → Show "Getting Started" guide
 
@@ -103,6 +96,7 @@ Based on the workflow state, determine the recommended next action:
 #### No Current Context
 
 If `current_context.exists == false`:
+
 - **Primary**: `/add "description"` - Create your first workflow
 - Show getting started guide
 - Explain feature vs bug classification
@@ -112,6 +106,7 @@ If `current_context.exists == false`:
 If `workflow_type == "feature"`:
 
 **Status: clarifying**
+
 - If `artifacts.context_md == false`:
   - Primary: `/add-context` - Add codebase context
   - Secondary: `/clarify` - Start requirements gathering
@@ -122,16 +117,19 @@ If `workflow_type == "feature"`:
   - Secondary: `/create-prd` - Generate PRD when ready
 
 **Status: prd-draft**
+
 - Primary: Review `prd.md` and manually update `state.yml` status to `prd-approved`
 - Secondary: `/update-feature` - If changes needed
 
 **Status: prd-approved**
+
 - If `artifacts.implementation_plan == false`:
   - Primary: `/define-implementation-plan` - Create implementation plan
 - Else:
   - Note: Plan exists but state shows prd-approved (review plan)
 
 **Status: planning**
+
 - If `plan_state.status == "pending"`:
   - Primary: Review `implementation-plan/plan.md`
   - Secondary: `/execute` - Start execution when ready
@@ -142,6 +140,7 @@ If `workflow_type == "feature"`:
   - Secondary: `/update-feature` - For any changes
 
 **Status: in-progress**
+
 - Primary: Continue implementation
 - Secondary: `/update-feature` - For requirement changes
 
@@ -150,6 +149,7 @@ If `workflow_type == "feature"`:
 If `workflow_type == "bug"`:
 
 **Status: reported**
+
 - If `artifacts.context_md == false`:
   - Primary: `/add-context` - Add context (optional)
   - Secondary: `/triage-bug` - Start diagnosis
@@ -157,20 +157,24 @@ If `workflow_type == "bug"`:
   - Primary: `/triage-bug` - Diagnose root cause
 
 **Status: triaged**
+
 - If `artifacts.fix_plan_md == false`:
   - Primary: `/plan-fix` - Create fix checklist
 - Else:
   - Primary: Implement fix following `fix-plan.md`
 
 **Status: fixing**
+
 - Primary: Continue implementing fix
 - Secondary: Test the fix
 
 **Status: resolved**
+
 - Primary: Final testing and verification
 - Secondary: Update state to `closed` when verified
 
 **Status: closed**
+
 - Status: Bug is complete
 - Suggest: Archive or create new workflow
 
@@ -179,6 +183,7 @@ If `workflow_type == "bug"`:
 If `workflow_type == "idea"`:
 
 **Status: exploring**
+
 - If `artifacts.refinement_count == 0`:
   - Primary: `/define-idea` - Start Round 1 (Identify & Define)
 - Else if `artifacts.refinement_count == 1`:
@@ -188,6 +193,7 @@ If `workflow_type == "idea"`:
   - Secondary: `/add-context` - Add more context if needed
 
 **Status: refined**
+
 - If `artifacts.refined_idea_md == true`:
   - Primary: Review `refined-idea.md` - Check recommendations and next steps
   - Secondary: Convert to feature/bug with `/add "{description based on refined idea}"`
@@ -195,11 +201,13 @@ If `workflow_type == "idea"`:
   - Alternative: `/define-idea` - Add another refinement round if needed
 
 **Status: shelved**
+
 - Status: Idea is on hold for later consideration
 - Suggest: Review `refined-idea.md` when ready to reconsider
 - Note: Can be resumed by updating state back to `exploring` or `refined`
 
 **Status: converted**
+
 - Status: Idea converted to {converted_to} (e.g., "feature:user-auth")
 - Primary: Work on the converted workflow
 - Secondary: `/set-current {converted-workflow-name}` - Switch to converted workflow
@@ -207,6 +215,7 @@ If `workflow_type == "idea"`:
 ### 6. Calculate Progress Indicator
 
 **For Features:**
+
 ```
 Step 1 of 7: Add context (clarifying)
 Step 2 of 7: Clarify requirements (clarifying with context)
@@ -218,6 +227,7 @@ Step 7 of 7: Testing & completion (in-progress)
 ```
 
 **For Bugs:**
+
 ```
 Step 1 of 4: Add context (optional) (reported)
 Step 2 of 4: Triage bug (reported → triaged)
@@ -226,6 +236,7 @@ Step 4 of 4: Implement & test fix (fixing → resolved → closed)
 ```
 
 **For Ideas:**
+
 ```
 Step 1 of 4: Round 1 - Identify & Define (exploring, 0 rounds)
 Step 2 of 4: Round 2 - Test Assumptions (exploring, 1 round)
@@ -311,7 +322,9 @@ You haven't set a current workflow context yet.
 
 ### Create a New Workflow
 ```
+
 /add "description of your feature or bug"
+
 ```
 
 **Examples:**
@@ -325,7 +338,9 @@ The system automatically classifies your request based on keywords!
 
 ### Or Set an Existing Workflow
 ```
+
 /set-current {workflow-name}
+
 ```
 
 This makes the workflow your current context, allowing you to use commands without specifying the name.
@@ -335,7 +350,9 @@ This makes the workflow your current context, allowing you to use commands witho
 For exploratory work before committing to a feature or bug:
 
 ```
+
 /define-idea "your idea description"
+
 ```
 
 **Example:**
@@ -348,7 +365,9 @@ This starts an iterative refinement process to test assumptions and explore alte
 Define your project's tech stack (automatically included in PRDs and plans):
 
 ```
+
 /define-tech-stack
+
 ```
 
 ## Workflow Types
@@ -443,11 +462,13 @@ For exploring and refining ideas before committing to implementation.
 ### Example 1: New User with No Context
 
 **User:**
+
 ```
 /help
 ```
 
 **Script Output:**
+
 ```json
 {
   "status": "success",
@@ -459,6 +480,7 @@ For exploring and refining ideas before committing to implementation.
 ```
 
 **AI Response:**
+
 ```markdown
 # Workflow Help
 
@@ -472,11 +494,13 @@ You haven't set a current workflow context yet.
 ### Example 2: Feature in Clarifying State
 
 **User:**
+
 ```
 /help user-auth
 ```
 
 **Script Output:**
+
 ```json
 {
   "status": "success",
@@ -502,6 +526,7 @@ You haven't set a current workflow context yet.
 ```
 
 **AI Response:**
+
 ```markdown
 # Workflow Help: user-auth
 
@@ -528,11 +553,13 @@ Adding context helps generate better requirements questions and ensures the PRD 
 ### Example 3: Feature with Active Implementation Plan
 
 **User:**
+
 ```
 /help
 ```
 
 **Script Output:**
+
 ```json
 {
   "status": "success",
@@ -567,6 +594,7 @@ Adding context helps generate better requirements questions and ensures the PRD 
 ```
 
 **AI Response:**
+
 ```markdown
 # Workflow Help: data-export
 

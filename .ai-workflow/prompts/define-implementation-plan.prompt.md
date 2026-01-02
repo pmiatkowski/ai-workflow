@@ -1,7 +1,9 @@
-# Prompt: define-implementation-plan
+---
+agent: agent
+description:
+  Create a phased implementation plan from an approved PRD.
+---
 
-## Purpose
-Create a phased implementation plan from an approved PRD.
 
 ## Important: This Is Planning Only
 
@@ -26,6 +28,7 @@ Your role is to CREATE A PLANNING DOCUMENT, not to write code.
 After completing the planning document, return control to the user.
 
 ## Usage
+
 ```
 User: /define-implementation-plan                # Uses current context
 User: /define-implementation-plan {feature-name} # Explicit feature
@@ -55,7 +58,7 @@ To work with a feature:
   /define-implementation-plan
 ```
 
-4. If no current context:
+1. If no current context:
 
 ```
 ⚠ No feature specified and no current context set.
@@ -74,6 +77,7 @@ Check if `.ai-workflow/features/{name}/` exists.
 Check `.ai-workflow/features/{name}/prd.md` exists.
 
 If missing:
+
 ```
 ⚠ PRD not found for '{feature-name}'.
 
@@ -85,6 +89,7 @@ Run /create-prd first.
 Check if `.ai-workflow/features/{name}/implementation-plan/` exists.
 
 If missing, execute:
+
 ```bash
 python .ai-workflow/scripts/init-impl-plan.py {feature-name}
 ```
@@ -212,6 +217,7 @@ Fill `implementation-plan/plan.md` using this structure:
 ### 6. Planning Rules
 
 **Phase design:**
+
 - Each phase should be independently testable/demoable
 - Phases build on each other (dependencies flow downward)
 - First phase = foundation/core functionality
@@ -219,6 +225,7 @@ Fill `implementation-plan/plan.md` using this structure:
 - Typically 2-5 phases (more phases = smaller increments)
 
 **Task design:**
+
 - Tasks should be completable in ~1-4 hours
 - One task = one logical unit of work
 - Prefix with phase number (1.1, 1.2, 2.1, ...)
@@ -228,6 +235,7 @@ Fill `implementation-plan/plan.md` using this structure:
   - Example: "Task 2.3: Implement type-safe API client (see memory/coding-rules/typescript/type-safety.md)"
 
 **Mapping from PRD:**
+
 - Each FR should map to at least one task
 - Each AC should be verifiable after some phase
 - Technical considerations inform task details
@@ -235,6 +243,7 @@ Fill `implementation-plan/plan.md` using this structure:
 ### 7. Update State Files
 
 **Update `implementation-plan/plan-state.yml`:**
+
 ```yaml
 status: planning
 current_phase: 1
@@ -248,6 +257,7 @@ phases:
 ```
 
 **Update `state.yml`:**
+
 ```yaml
 status: planning
 updated: {YYYY-MM-DD}

@@ -1,19 +1,8 @@
-# Prompt: update-feature
-
-## Purpose
-Handle requirement changes after PRD exists. Captures the change, triggers clarification if needed, and refines the PRD.
-
-## Usage
-```
-User: /update-feature                # Uses current context
-User: /update-feature {feature-name} # Explicit feature
-```
-
-Then user describes what changed.
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Handle requirement changes after PRD exists. Captures the change, triggers clarification if needed, and refines the PRD.
+---
 
 You are managing a requirements change. Your goal is to capture the change, assess its impact, and update documentation accordingly.
 
@@ -35,7 +24,7 @@ To update a feature:
   /update-feature
 ```
 
-4. If no current context:
+1. If no current context:
 
 ```
 ⚠ No feature specified and no current context set.
@@ -54,6 +43,7 @@ Check if `.ai-workflow/features/{name}/` exists.
 Check `.ai-workflow/features/{name}/prd.md` exists.
 
 If not:
+
 ```
 ⚠ No PRD found for '{feature-name}'.
 
@@ -116,6 +106,7 @@ Read current `prd.md` and determine:
 3. Whether clarification is needed
 
 **Clarification needed if:**
+
 - Change introduces ambiguity
 - Change conflicts with existing requirements
 - Change has unclear scope
@@ -124,6 +115,7 @@ Read current `prd.md` and determine:
 ### 5. Branch Based on Severity
 
 **Minor changes:**
+
 ```
 This appears to be a minor change affecting:
   - {affected sections}
@@ -134,6 +126,7 @@ I can update the PRD directly. Proceed? (yes/no)
 If yes → Update PRD inline, skip clarification.
 
 **Moderate/Major changes:**
+
 ```
 This change affects:
   - {affected sections}
@@ -154,19 +147,21 @@ Or if you're confident, I can update the PRD directly.
 When updating PRD:
 
 1. Add update reference at top:
+
 ```markdown
 > **Last Updated**: {YYYY-MM-DD}  
 > **Updates**: See updates/update-{n}.md
 ```
 
-2. Modify affected sections
-3. Mark modified items with `[Updated]` tag temporarily
-4. Update acceptance criteria if needed
-5. Add to Open Questions if unresolved items
+1. Modify affected sections
+2. Mark modified items with `[Updated]` tag temporarily
+3. Update acceptance criteria if needed
+4. Add to Open Questions if unresolved items
 
 ### 7. Update State
 
 Update `state.yml`:
+
 ```yaml
 status: prd-draft  # reset to draft if was approved
 updated: {YYYY-MM-DD}
@@ -198,6 +193,7 @@ Next step:
 ## Example Session
 
 **User:**
+
 ```
 /update-feature user-auth
 
@@ -232,6 +228,7 @@ Then run /create-prd user-auth to regenerate PRD with changes.
 ## Example: Minor Change
 
 **User:**
+
 ```
 /update-feature user-auth
 
@@ -239,6 +236,7 @@ Change the session timeout from 24 hours to 12 hours for non-remembered sessions
 ```
 
 **AI responds:**
+
 ```
 ✓ Saved updates/update-02.md
 
@@ -254,6 +252,7 @@ Proceed? (yes/no)
 **User:** yes
 
 **AI updates PRD and responds:**
+
 ```
 ✓ Updated prd.md
 

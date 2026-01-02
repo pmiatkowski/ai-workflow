@@ -1,17 +1,8 @@
-# Prompt: triage-bug
-
-## Purpose
-Diagnose root cause and identify fix approach for a bug.
-
-## Usage
-```
-User: /triage-bug           # Uses current context
-User: /triage-bug {bug-name} # Explicit bug
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Diagnose root cause and identify fix approach for a bug.
+---
 
 You are triaging a bug to diagnose the root cause and plan the fix.
 
@@ -33,7 +24,7 @@ To triage a bug:
   /triage-bug
 ```
 
-4. If no current context:
+1. If no current context:
 
 ```
 ⚠ No bug specified and no current context set.
@@ -60,19 +51,23 @@ Read:
 **Check if diagnostic questions are needed:**
 
 Read existing information from:
+
 - `report.md` — bug description and reproduction steps
 - `context.md` — codebase context (if exists)
 
 **Assess information completeness:**
+
 - Are reproduction steps clear and specific?
 - Are error messages/symptoms documented?
 - Are affected components identified?
 - Is timing/trigger information available?
 
 **If information is sufficient:**
+
 - Skip to Step 4 (Diagnose Root Cause)
 
 **If information is missing:**
+
 - Proceed with sequential diagnostic questioning
 
 ### 3A. Plan Diagnostic Questions
@@ -80,6 +75,7 @@ Read existing information from:
 **Determine missing information and plan 2-3 focused questions:**
 
 Common diagnostic question types:
+
 - **Reproduction**: Exact steps to reproduce, consistency/intermittency
 - **Symptoms**: Error messages, observed behavior, failure mode
 - **Scope**: Which components/pages/users affected
@@ -87,6 +83,7 @@ Common diagnostic question types:
 - **Context**: Recent changes, related systems
 
 **Plan questions based on gaps:**
+
 1. Identify 2-3 most critical gaps in understanding
 2. For each question, prepare 3 scenario-based options (A, B, C)
 3. Create question plan internally (don't reveal all at once)
@@ -96,6 +93,7 @@ Common diagnostic question types:
 **For each planned question:**
 
 **Question Format:**
+
 ```
 Question {n}/{total}
 
@@ -115,11 +113,13 @@ You can select A, B, or C, or provide your own answer.
 **Option Generation Guidelines for Diagnostic Questions:**
 
 **PRIORITY 1: Common Failure Patterns**
+
 - Based on the bug symptoms, identify 3 most common causes
 - Use industry knowledge and debugging experience
 - Present scenarios from most to least likely
 
 **PRIORITY 2: Diagnostic Scenarios**
+
 - Options should help narrow down root cause
 - Each option should suggest different investigation paths
 - Example:
@@ -128,18 +128,21 @@ You can select A, B, or C, or provide your own answer.
   - C: Configuration/data issue (conditional)
 
 **FORMAT RULES:**
+
 - Each option: Clear scenario description
 - Include diagnostic implication in parentheses
 - Make scenarios mutually exclusive
 - Avoid overly technical jargon unless context suggests expertise
 
 **Recommendation Format:**
+
 ```
 Understanding [aspect] helps narrow the root cause. Option A would suggest [implication],
 Option B suggests [implication], Option C suggests [implication].
 ```
 
 **After Each Answer:**
+
 1. Acknowledge answer: `✓ Noted: {brief summary of answer}`
 2. Store answer internally for diagnosis
 3. If more questions remain, ask next question
@@ -186,6 +189,7 @@ You can select A, B, or C, or provide your own answer.
 ### 3C. Diagnose Root Cause
 
 Based on report + context + answers, identify:
+
 - **Root cause**: What's actually broken?
 - **Affected components**: Which files/modules are involved?
 - **Impact**: How severe is this bug?
@@ -221,12 +225,14 @@ Create `.ai-workflow/bugs/{bug-name}/triage.md`:
 ### 5. Update State
 
 Update `.ai-workflow/bugs/{bug-name}/state.yml`:
+
 - Change `status: reported` → `status: triaged`
 - Update `updated: {today}`
 
 ### 6. Next Steps
 
 Suggest:
+
 ```
 ✓ Bug triaged: {bug-name}
 
@@ -239,11 +245,13 @@ Next step:
 ## Example Session (Sequential Format)
 
 **User:**
+
 ```
 /triage-bug login-timeout
 ```
 
 **AI reads:**
+
 - `.ai-workflow/bugs/login-timeout/report.md` (missing specific symptoms)
 - `.ai-workflow/bugs/login-timeout/context.md` (auth system described)
 
@@ -252,6 +260,7 @@ Next step:
 **AI plans:** 3 questions about consistency, symptoms, and scope
 
 **AI asks Question 1:**
+
 ```
 Question 1/3
 
@@ -271,6 +280,7 @@ You can select A, B, or C, or provide your own answer.
 **User:** B
 
 **AI asks Question 2:**
+
 ```
 ✓ Noted: Intermittent occurrence (20-50% of attempts)
 
@@ -292,6 +302,7 @@ You can select A, B, or C, or provide your own answer.
 **User:** "Connection timeout after 30 seconds with error 504"
 
 **AI asks Question 3:**
+
 ```
 ✓ Noted: 504 Gateway Timeout after 30 seconds
 
@@ -315,6 +326,7 @@ You can select A, B, or C, or provide your own answer.
 **After all questions answered, AI diagnoses and creates triage.md**
 
 **AI responds:**
+
 ```
 ✓ Bug triaged: login-timeout
 

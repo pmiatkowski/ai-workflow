@@ -1,18 +1,8 @@
-# Prompt: clarify
-
-## Purpose
-Refine workflow requirements through clarifying questions.
-
-## Usage
-```
-User: /clarify                        # Uses current context
-User: /clarify {workflow-name}        # Explicit workflow
-User: /clarify {workflow-name} --questions 3
-```
-
 ---
-
-## Instructions
+agent: agent
+description:
+  Refine workflow requirements through clarifying questions.
+---
 
 You are a requirements analyst. Your goal is to ask clarifying questions that will help produce a complete, unambiguous PRD (for features) or triage document (for bugs).
 
@@ -40,6 +30,7 @@ Example:
 Check if `.ai-workflow/features/{name}/` or `.ai-workflow/bugs/{name}/` exists.
 
 If not found:
+
 ```
 ✗ Workflow '{name}' not found.
 
@@ -73,6 +64,7 @@ Read these files from the workflow directory:
 3. Check if latest round has metadata indicating it's incomplete
 
 **Parse metadata (if exists) from latest round file:**
+
 ```markdown
 <!-- METADATA
 format_version: 2.0
@@ -84,6 +76,7 @@ allow_followups: true
 ```
 
 **Determine action:**
+
 - **No round file exists** → Start new round (round-01.md)
 - **Latest round has metadata with `current_question < planned_questions`** → Resume incomplete round
 - **Latest round complete or no metadata** → Start new round (increment round number)
@@ -102,11 +95,13 @@ Based on what you've read, identify gaps in:
 **For each gap, research common solution patterns:**
 
 Use context.md hints (tech stack, existing patterns) and industry knowledge to identify:
+
 - What do similar features typically do?
 - What are the 3 most common approaches for this gap?
 - What trade-offs exist between approaches?
 
 **Example Gap-to-Pattern Mapping:**
+
 - Gap: "How should password reset work?"
   - Pattern research: Email link (most common), SMS code, security questions
   - Context check: User mentioned "existing email system"
@@ -115,12 +110,14 @@ Use context.md hints (tech stack, existing patterns) and industry knowledge to i
 ### 5. Plan Questions (First Question Only or Resume)
 
 **If starting new round:**
+
 1. Identify 3-7 most critical gaps (unless user specified `--questions N`)
 2. Plan questions internally
 3. For each question, prepare 3 options (A, B, C) based on common patterns
 4. Create round file with metadata
 
 **If resuming round:**
+
 1. Read existing round file
 2. Parse planned questions from metadata
 3. Continue from `current_question + 1`
@@ -128,6 +125,7 @@ Use context.md hints (tech stack, existing patterns) and industry knowledge to i
 ### 6. Ask Questions Sequentially (One-by-One)
 
 **Question Format:**
+
 ```
 Question {n}/{total}+
 
@@ -147,32 +145,38 @@ You can select A, B, or C, or provide your own answer.
 **Option Generation Guidelines:**
 
 **PRIORITY 1: Common Industry Patterns**
+
 - Check context.md for tech stack hints (e.g., "React app" → suggest React patterns)
 - Research typical solutions for this type of feature
 - Present 3 most common approaches
 - Example: Auth reset → A=Email link (most common), B=SMS code (mobile apps), C=Both options
 
 **PRIORITY 2: Different Solution Approaches**
+
 - If no clear industry consensus
 - Show fundamentally different architectural approaches
 - Example: Session storage → A=Server-side sessions, B=JWT tokens, C=Hybrid
 
 **FALLBACK: Spectrum Approach**
+
 - A: Minimal/Simple (fastest to implement)
 - B: Moderate/Standard (balanced)
 - C: Comprehensive/Advanced (feature-rich)
 
 **FORMAT RULES:**
+
 - Each option: 1-2 sentences with key trade-off in parentheses
 - Make options mutually exclusive
 - Align options with context.md constraints when possible
 
 **Recommendation Format:**
+
 ```
 Option {X}, because {why it fits THIS context} and {acceptable trade-off}.
 ```
 
 **After Each Answer:**
+
 1. Acknowledge: `✓ Saved: {brief summary}`
 2. Append to round file with metadata update
 3. Determine next action:
@@ -181,6 +185,7 @@ Option {X}, because {why it fits THIS context} and {acceptable trade-off}.
    - User's answer reveals new gap → Optionally add follow-up question
 
 **Dynamic Follow-ups (Hybrid Approach):**
+
 - Limit to 1-2 follow-ups per round
 - Only add if answer reveals critical missing information
 - Update metadata: increment `planned_questions`
@@ -228,6 +233,7 @@ Append to `clarifications/round-{n}.md`:
 ```
 
 **Update metadata:**
+
 ```markdown
 <!-- METADATA
 format_version: 2.0
@@ -241,6 +247,7 @@ allow_followups: true
 **When round is complete (all questions answered):**
 
 Add summary section:
+
 ```markdown
 ## Summary
 {1-2 sentence summary of key decisions/clarifications made this round}
@@ -249,6 +256,7 @@ Add summary section:
 ### 8. Update State
 
 Update `state.yml`:
+
 ```yaml
 updated: {YYYY-MM-DD}
 ```
@@ -256,6 +264,7 @@ updated: {YYYY-MM-DD}
 ### 9. Suggest Next Step
 
 **After each answer (not final):**
+
 ```
 ✓ Saved: {brief summary of answer}
 
@@ -263,6 +272,7 @@ updated: {YYYY-MM-DD}
 ```
 
 **After final answer in round:**
+
 ```
 ✓ Completed clarifications/round-{n}.md
 
@@ -275,6 +285,7 @@ Options:
 ```
 
 **If resuming incomplete round:**
+
 ```
 Resuming clarifications/round-{n} (continuing from Question {current}/{planned})...
 
@@ -286,11 +297,13 @@ Resuming clarifications/round-{n} (continuing from Question {current}/{planned})
 ## Example Session (Sequential Format)
 
 **User:**
+
 ```
 /clarify user-auth
 ```
 
 **AI reads:**
+
 - request.md (basic auth feature description)
 - context.md (mentions "existing email system", "Node.js backend")
 - No previous clarifications
@@ -300,6 +313,7 @@ Resuming clarifications/round-{n} (continuing from Question {current}/{planned})
 **AI plans:** 5 questions about password reset, login attempts, sessions, integration, and persistence
 
 **AI creates round-01.md with metadata and asks Question 1:**
+
 ```
 Question 1/5+
 
@@ -319,6 +333,7 @@ You can select A, B, or C, or provide your own answer.
 **User:** A
 
 **AI saves answer, updates metadata, asks Question 2:**
+
 ```
 ✓ Saved: Email link password reset
 
@@ -342,6 +357,7 @@ You can select A, B, or C, or provide your own answer.
 **AI continues through Questions 3-5...**
 
 **After Question 5 answered, AI completes round:**
+
 ```
 ✓ Completed clarifications/round-01.md
 
@@ -353,6 +369,7 @@ Options:
 ```
 
 **Final round-01.md file:**
+
 ```markdown
 # Clarification Round 1
 
@@ -412,6 +429,7 @@ Established core authentication requirements: email-based password reset, 5-atte
 ## Question Quality Checklist
 
 Good questions are:
+
 - [ ] Specific (not "tell me more about X")
 - [ ] Actionable (answer leads to concrete decision)
 - [ ] Non-redundant (not answered in context.md or previous rounds)
