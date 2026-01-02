@@ -22,8 +22,8 @@ class PathsConfig:
     prompts: str = ".ai-workflow/prompts"
     scripts: str = ".ai-workflow/scripts"
     memory: str = ".ai-workflow/memory"
-    tech_stack: str = ".ai-workflow/tech-stack.md"
-    coding_rules: str = ".ai-workflow/coding-rules"
+    tech_stack: str = ".ai-workflow/memory/tech-stack.md"
+    coding_rules: str = ".ai-workflow/memory/coding-rules"
 
 
 @dataclass
@@ -123,8 +123,8 @@ class Config:
                 prompts=paths_data.get("prompts", ".ai-workflow/prompts"),
                 scripts=paths_data.get("scripts", ".ai-workflow/scripts"),
                 memory=paths_data.get("memory", ".ai-workflow/memory"),
-                tech_stack=paths_data.get("tech_stack", ".ai-workflow/tech-stack.md"),
-                coding_rules=paths_data.get("coding_rules", ".ai-workflow/coding-rules"),
+                tech_stack=paths_data.get("tech_stack", ".ai-workflow/memory/tech-stack.md"),
+                coding_rules=paths_data.get("coding_rules", ".ai-workflow/memory/coding-rules"),
             ),
             defaults=DefaultsConfig(
                 date_format=defaults_data.get("date_format", "%Y-%m-%d"),

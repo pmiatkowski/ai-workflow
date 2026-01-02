@@ -49,7 +49,7 @@ The JSON structure contains:
   "current_context": {
     "exists": bool,
     "name": "workflow-name",
-    "workflow_type": "feature" | "bug",
+    "workflow_type": "feature" | "bug" | "idea",
     "set_date": "YYYY-MM-DD",
     "set_method": "auto" | "manual"
   },
@@ -64,7 +64,10 @@ The JSON structure contains:
       "prd_md": bool,
       "implementation_plan": bool,
       "triage_md": bool,
-      "fix_plan_md": bool
+      "fix_plan_md": bool,
+      "refinement_count": int,
+      "refined_idea_md": bool,
+      "converted_to": string | null
     }
   },
   "plan_state": {
@@ -76,7 +79,8 @@ The JSON structure contains:
   },
   "workflow_config": {
     "feature_states": [...],
-    "bug_states": [...]
+    "bug_states": [...],
+    "idea_states": [...]
   }
 }
 ```
@@ -170,6 +174,36 @@ If `workflow_type == "bug"`:
 - Status: Bug is complete
 - Suggest: Archive or create new workflow
 
+#### Idea Workflow
+
+If `workflow_type == "idea"`:
+
+**Status: exploring**
+- If `artifacts.refinement_count == 0`:
+  - Primary: `/define-idea` - Start Round 1 (Identify & Define)
+- Else if `artifacts.refinement_count == 1`:
+  - Primary: `/define-idea` - Continue to Round 2 (Test Assumptions)
+- Else if `artifacts.refinement_count >= 2`:
+  - Primary: `/define-idea` - Synthesize to refined-idea.md (or continue Round 3+)
+  - Secondary: `/add-context` - Add more context if needed
+
+**Status: refined**
+- If `artifacts.refined_idea_md == true`:
+  - Primary: Review `refined-idea.md` - Check recommendations and next steps
+  - Secondary: Convert to feature/bug with `/add "{description based on refined idea}"`
+  - Alternative: Manually update state to `shelved` if not proceeding
+  - Alternative: `/define-idea` - Add another refinement round if needed
+
+**Status: shelved**
+- Status: Idea is on hold for later consideration
+- Suggest: Review `refined-idea.md` when ready to reconsider
+- Note: Can be resumed by updating state back to `exploring` or `refined`
+
+**Status: converted**
+- Status: Idea converted to {converted_to} (e.g., "feature:user-auth")
+- Primary: Work on the converted workflow
+- Secondary: `/set-current {converted-workflow-name}` - Switch to converted workflow
+
 ### 6. Calculate Progress Indicator
 
 **For Features:**
@@ -189,6 +223,14 @@ Step 1 of 4: Add context (optional) (reported)
 Step 2 of 4: Triage bug (reported → triaged)
 Step 3 of 4: Plan fix (triaged → fixing)
 Step 4 of 4: Implement & test fix (fixing → resolved → closed)
+```
+
+**For Ideas:**
+```
+Step 1 of 4: Round 1 - Identify & Define (exploring, 0 rounds)
+Step 2 of 4: Round 2 - Test Assumptions (exploring, 1 round)
+Step 3 of 4: Synthesize refined-idea.md (exploring → refined)
+Step 4 of 4: Review & decide (refined → converted/shelved)
 ```
 
 ### 7. Format Output
@@ -231,6 +273,9 @@ Phase {current_phase} of {total_phases}: {phase_name}
 - `/set-current {name}` - Switch workflow context
 - `/help [name]` - Show this help
 
+### Setup Commands
+- `/define-tech-stack` - Define global tech stack (one-time setup)
+
 ### Feature Commands
 - `/create-prd [name]` - Generate PRD from clarifications
 - `/update-feature [name]` - Update requirements after PRD
@@ -240,6 +285,12 @@ Phase {current_phase} of {total_phases}: {phase_name}
 ### Bug Commands
 - `/triage-bug [name]` - Diagnose root cause and fix approach
 - `/plan-fix [name]` - Create lightweight fix checklist
+
+### Idea Commands
+- `/define-idea "description"` - Initialize new exploratory idea
+- `/define-idea [name]` - Continue refinement rounds
+- `/add-context [name]` - Add context to idea (optional)
+- `/clarify [name]` - Additional clarification for idea (optional)
 
 ---
 
@@ -279,6 +330,27 @@ The system automatically classifies your request based on keywords!
 
 This makes the workflow your current context, allowing you to use commands without specifying the name.
 
+### Explore an Idea (Pre-Workflow)
+
+For exploratory work before committing to a feature or bug:
+
+```
+/define-idea "your idea description"
+```
+
+**Example:**
+- `/define-idea "Add AI-powered search to documentation"`
+
+This starts an iterative refinement process to test assumptions and explore alternatives before implementation. Ideas use a 2-3 round refinement process (Identify & Define → Test Assumptions → Synthesize) and can later be converted to features or bugs.
+
+### One-Time Setup
+
+Define your project's tech stack (automatically included in PRDs and plans):
+
+```
+/define-tech-stack
+```
+
 ## Workflow Types
 
 ### Feature Workflow (Full PRD Process)
@@ -306,9 +378,48 @@ For fixes, issues, and errors.
 4. `/plan-fix` - Create fix checklist
 5. Implement and test fix
 
+### Idea Workflow (Exploratory Refinement)
+For exploring and refining ideas before committing to implementation.
+
+**States**: exploring → refined → shelved / converted
+
+**Typical Flow**:
+1. `/define-idea "idea description"` - Initialize idea, start Round 1 (Identify & Define)
+2. Answer sequential questions about problem, context, success criteria
+3. `/define-idea {name}` - Continue to Round 2 (Test Assumptions & Explore Alternatives)
+4. Answer questions testing desirability, viability, feasibility, usability, and risks
+5. Synthesize to `refined-idea.md` with recommendations
+6. Convert to feature/bug with `/add` or shelve for later
+
+**Note**: Ideas are explicitly exploratory and separate from features/bugs. They help validate and refine concepts before implementation.
+
 ## All Available Commands
 
-{Same command list as above}
+### Universal Commands
+- `/add "description"` - Add new feature or bug
+- `/add-context [name]` - Add codebase/business context
+- `/clarify [name]` - Refine requirements through Q&A
+- `/set-current {name}` - Switch workflow context
+- `/help [name]` - Show this help
+
+### Setup Commands
+- `/define-tech-stack` - Define global tech stack (one-time setup)
+
+### Feature Commands
+- `/create-prd [name]` - Generate PRD from clarifications
+- `/update-feature [name]` - Update requirements after PRD
+- `/define-implementation-plan [name]` - Create phased implementation plan
+- `/execute [name]` - Execute implementation plan
+
+### Bug Commands
+- `/triage-bug [name]` - Diagnose root cause and fix approach
+- `/plan-fix [name]` - Create lightweight fix checklist
+
+### Idea Commands
+- `/define-idea "description"` - Initialize new exploratory idea
+- `/define-idea [name]` - Continue refinement rounds
+- `/add-context [name]` - Add context to idea (optional)
+- `/clarify [name]` - Additional clarification for idea (optional)
 
 ---
 

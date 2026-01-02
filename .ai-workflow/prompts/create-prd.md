@@ -74,7 +74,7 @@ Read everything from `.ai-workflow/features/{name}/`:
 **Also read global context (if available):**
 
 ```
-.ai-workflow/
+.ai-workflow/memory/
 └── tech-stack.md        # Global tech stack (optional)
 ```
 
@@ -153,7 +153,7 @@ Create `prd.md` using this exact structure:
 
 ## Technical Considerations
 {Base this section on:
-- Global tech stack (.ai-workflow/tech-stack.md) if available
+- Global tech stack (.ai-workflow/memory/tech-stack.md) if available
 - Feature-specific context (context.md)
 - Constraints, dependencies, integration points from clarifications
 

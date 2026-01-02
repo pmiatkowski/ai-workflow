@@ -30,7 +30,7 @@ def init_impl_plan(feature_name: str) -> None:
     # Check feature exists
     if not feature_path.exists():
         print(f"✗ Feature '{feature_name}' not found at {feature_path}")
-        print(f"\nRun first: /add-feature {feature_name} \"description\"")
+        print(f"\nRun first: /add \"{feature_name} description\"")
         sys.exit(1)
     
     # Check PRD exists (warning only)

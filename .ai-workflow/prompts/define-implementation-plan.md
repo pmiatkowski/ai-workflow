@@ -107,7 +107,7 @@ Read and understand the following files:
 **Also read global context (if available):**
 
 ```
-.ai-workflow/
+.ai-workflow/memory/
 ├── tech-stack.md           # Global tech stack (optional)
 └── coding-rules/           # Coding standards (optional)
     └── index.md
@@ -224,8 +224,8 @@ Fill `implementation-plan/plan.md` using this structure:
 - Prefix with phase number (1.1, 1.2, 2.1, ...)
 - Be specific — "Implement login form" not "Build frontend"
 - **Include coding standards**: Reference specific coding rules when applicable
-  - Example: "Task 1.1: Create LoginForm component following React component architecture standards (see coding-rules/react/component-architecture.md)"
-  - Example: "Task 2.3: Implement type-safe API client (see coding-rules/typescript/type-safety.md)"
+  - Example: "Task 1.1: Create LoginForm component following React component architecture standards (see memory/coding-rules/react/component-architecture.md)"
+  - Example: "Task 2.3: Implement type-safe API client (see memory/coding-rules/typescript/type-safety.md)"
 
 **Mapping from PRD:**
 - Each FR should map to at least one task

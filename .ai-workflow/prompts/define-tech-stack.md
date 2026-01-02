@@ -16,11 +16,11 @@ You are a technical architect helping document the project's tech stack. Your go
 
 ### 1. Check for Existing Tech Stack
 
-Check if `.ai-workflow/tech-stack.md` exists.
+Check if `.ai-workflow/memory/tech-stack.md` exists.
 
 **If exists:**
 ```
-⚠ Tech stack already defined at .ai-workflow/tech-stack.md
+⚠ Tech stack already defined at .ai-workflow/memory/tech-stack.md
 
 Options:
   A: Update existing (recommended for additions/changes)
@@ -31,7 +31,7 @@ Your choice?
 ```
 
 **If user chooses A (Update):**
-1. Read existing `.ai-workflow/tech-stack.md`
+1. Read existing `.ai-workflow/memory/tech-stack.md`
 2. Ask: "What would you like to update? (e.g., add new service, update version, change framework)"
 3. Wait for user's specific update request
 4. Make targeted updates to specific sections
@@ -210,7 +210,7 @@ Provide any additional information or type "None".
 
 ### 3. Generate tech-stack.md
 
-After collecting all answers, create `.ai-workflow/tech-stack.md` using the detailed template:
+After collecting all answers, create `.ai-workflow/memory/tech-stack.md` using the detailed template:
 
 ```markdown
 # Tech Stack
@@ -303,8 +303,8 @@ After collecting all answers, create `.ai-workflow/tech-stack.md` using the deta
 - If information is missing or unclear, use placeholder text that prompts future updates
 
 **File creation:**
-1. Ensure `.ai-workflow/` directory exists
-2. Write content to `.ai-workflow/tech-stack.md`
+1. Ensure `.ai-workflow/memory/` directory exists
+2. Write content to `.ai-workflow/memory/tech-stack.md`
 3. If update mode, preserve information not being changed
 
 ### 4. Confirm Completion
@@ -312,7 +312,7 @@ After collecting all answers, create `.ai-workflow/tech-stack.md` using the deta
 After creating or updating the file, display confirmation:
 
 ```
-✓ Created .ai-workflow/tech-stack.md
+✓ Created .ai-workflow/memory/tech-stack.md
 
 Summary:
   - Primary language: {language}
@@ -326,14 +326,14 @@ This tech stack will be automatically included when:
   - Defining implementation plans (/define-implementation-plan)
 
 Next steps:
-  - Review .ai-workflow/tech-stack.md
+  - Review .ai-workflow/memory/tech-stack.md
   - Update as needed with /define-tech-stack
   - Optionally define coding rules (see CLAUDE.md)
 ```
 
 **If update mode:**
 ```
-✓ Updated .ai-workflow/tech-stack.md
+✓ Updated .ai-workflow/memory/tech-stack.md
 
 Changes:
   - {List what was changed}

@@ -11,8 +11,8 @@ paths:
   prompts: .ai-workflow/prompts
   scripts: .ai-workflow/scripts
   memory: .ai-workflow/memory      # Global workflow state
-  tech_stack: .ai-workflow/tech-stack.md     # Global tech stack definition
-  coding_rules: .ai-workflow/coding-rules    # Coding standards and best practices
+  tech_stack: .ai-workflow/memory/tech-stack.md     # Global tech stack definition
+  coding_rules: .ai-workflow/memory/coding-rules    # Coding standards and best practices
 
 # Default values
 defaults:

@@ -22,7 +22,6 @@ The system uses a hybrid approach where:
 ├── config.yml              # Central configuration with workflow types
 ├── prompts/               # AI instruction templates
 │   ├── add.md             # Unified /add command with AI classification
-│   ├── add-feature.md     # Legacy feature command (still supported)
 │   ├── add-context.md
 │   ├── clarify.md
 │   ├── create-prd.md
@@ -35,7 +34,6 @@ The system uses a hybrid approach where:
 └── scripts/               # Python utilities
     ├── config.py          # Config loader with workflow type support
     ├── init-workflow.py   # Generic workflow initialization (feature/bug/etc.)
-    ├── init-feature.py    # Legacy wrapper (delegates to init-workflow.py)
     ├── init-impl-plan.py  # Create implementation plan structure
     └── update-plan-state.py  # Update plan state during execution
 
@@ -76,7 +74,7 @@ The system uses a hybrid approach where:
 ### Global Context Files
 
 ```text
-.ai-workflow/
+.ai-workflow/memory/
 ├── tech-stack.md          # Global technology stack definition
 └── coding-rules/          # Coding standards and best practices
     ├── index.md           # Entry point listing all rule categories
@@ -339,7 +337,6 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 
 | Command | Type | Purpose | Script Invoked |
 |---------|------|---------|----------------|
-| `/add-feature {name} {desc}` | Prompt→Script | Initialize feature folder (explicit) | `init-feature.py` → `init-workflow.py` |
 | `/add-context {name}` | Prompt | Add codebase/business context | None |
 | `/clarify {name}` | Prompt | Requirements Q&A | None |
 | `/create-prd {name}` | Prompt | Synthesize PRD | None |
@@ -380,16 +377,6 @@ When AI receives `/add "Fix timeout on login page"`:
 4. Executes `python .ai-workflow/scripts/init-workflow.py "login-timeout" "Fix timeout on login page" --type bug`
 5. Script creates bug folder in `.ai-workflow/bugs/login-timeout/`
 6. AI confirms completion and suggests next steps
-
-**Legacy `/add-feature` command (still supported):**
-
-When AI receives `/add-feature user-auth "Allow login with email/password"`:
-
-1. AI reads `.ai-workflow/prompts/add-feature.md`
-2. Follows instructions to execute `python .ai-workflow/scripts/init-feature.py "user-auth" "Allow login with email/password"`
-3. `init-feature.py` delegates to `init-workflow.py --type feature`
-4. Script creates feature folder in `.ai-workflow/features/user-auth/`
-5. AI confirms completion and suggests next steps
 
 ## State Management
 
@@ -571,9 +558,6 @@ While AI typically invokes scripts, they can be run directly:
 python .ai-workflow/scripts/init-workflow.py "item-name" "Description here" --type feature
 python .ai-workflow/scripts/init-workflow.py "bug-name" "Description here" --type bug
 
-# Initialize feature (legacy, delegates to init-workflow.py)
-python .ai-workflow/scripts/init-feature.py "feature-name" "Description here"
-
 # Initialize implementation plan
 python .ai-workflow/scripts/init-impl-plan.py "feature-name"
 
@@ -631,7 +615,7 @@ scripts/
 
 | Aspect | Feature Workflow | Bug Workflow | Idea Workflow |
 |--------|------------------|--------------|---------------|
-| **Command** | `/add "Add X"` or `/add-feature` | `/add "Fix X"` (auto-detected) | `/define-idea "description"` (explicit) |
+| **Command** | `/add "Add X"` | `/add "Fix X"` (auto-detected) | `/define-idea "description"` (explicit) |
 | **States** | clarifying → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
 | **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` | `.ai-workflow/ideas/{name}/` |
 | **PRD Required** | ✓ Yes (full PRD) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
@@ -731,7 +715,7 @@ synthesize
 # - Testing frameworks
 # Answer questions (select A/B/C or provide custom answers)
 
-# AI creates .ai-workflow/tech-stack.md
+# AI creates .ai-workflow/memory/tech-stack.md
 
 # Review and update as needed
 /define-tech-stack
@@ -742,17 +726,17 @@ synthesize
 
 ```
 # Create coding rules structure manually
-mkdir -p .ai-workflow/coding-rules/react
-mkdir -p .ai-workflow/coding-rules/typescript
+mkdir -p .ai-workflow/memory/coding-rules/react
+mkdir -p .ai-workflow/memory/coding-rules/typescript
 
-# Create index.md at root (.ai-workflow/coding-rules/index.md)
+# Create index.md at root (.ai-workflow/memory/coding-rules/index.md)
 # Example content:
 # # Rule Set: Project Name
 # - [React Standards](./react/index.md) - React coding standards
 # - [TypeScript Standards](./typescript/index.md) - TypeScript best practices
 
-# Create category indices (e.g., .ai-workflow/coding-rules/react/index.md)
-# Add rule files (e.g., .ai-workflow/coding-rules/react/component-architecture.md)
+# Create category indices (e.g., .ai-workflow/memory/coding-rules/react/index.md)
+# Add rule files (e.g., .ai-workflow/memory/coding-rules/react/component-architecture.md)
 
 # Rules will automatically be referenced in implementation plans
 ```
