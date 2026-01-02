@@ -15,6 +15,7 @@ except ImportError:
         class paths:
             features = ".ai-workflow/features"
             bugs = ".ai-workflow/bugs"
+            ideas = ".ai-workflow/ideas"
         class defaults:
             date_format = "%Y-%m-%d"
         class WorkflowType:
@@ -28,9 +29,18 @@ except ImportError:
                 wf.base_path = "bugs"
                 wf.initial_state = "reported"
                 wf.artifacts = ["state.yml", "report.md", "context.md", "clarifications/", "triage.md", "fix-plan.md"]
+            elif type_name == "idea":
+                wf.base_path = "ideas"
+                wf.initial_state = "exploring"
+                wf.artifacts = ["state.yml", "description.md", "context.md", "refinement/"]
             return wf
         def get_workflow_path(self, name, workflow_type):
-            base = self.paths.bugs if workflow_type == "bug" else self.paths.features
+            if workflow_type == "bug":
+                base = self.paths.bugs
+            elif workflow_type == "idea":
+                base = self.paths.ideas
+            else:
+                base = self.paths.features
             return Path(base) / name
     cfg = FallbackConfig()
 
@@ -79,6 +89,19 @@ def create_request_md(path: Path, name: str, description: str, today: str):
 {today}
 """
     (path / "request.md").write_text(content)
+
+
+def create_description_md(path: Path, name: str, description: str, today: str):
+    """Create idea description template."""
+    content = f"""# Idea: {name}
+
+## Initial Description
+{description}
+
+## Created
+{today}
+"""
+    (path / "description.md").write_text(content)
 
 
 def create_context_md(path: Path):
@@ -136,6 +159,9 @@ updated: {today}
         elif artifact == "request.md":
             # Feature request
             create_request_md(workflow_path, name, description, today)
+        elif artifact == "description.md":
+            # Idea description
+            create_description_md(workflow_path, name, description, today)
         elif artifact == "context.md":
             # Context template
             create_context_md(workflow_path)
@@ -157,6 +183,10 @@ updated: {today}
         print("\nNext steps:")
         print(f"  1. /add-context {name} — add relevant codebase context (optional)")
         print(f"  2. /triage-bug {name} — diagnose root cause and plan fix")
+    elif workflow_type == "idea":
+        print("\nNext steps:")
+        print(f"  1. /add-context {name} — add relevant context (optional)")
+        print(f"  2. /define-idea {name} — start idea refinement through Q&A")
     else:
         print("\nNext steps:")
         print(f"  1. /add-context {name} — add relevant codebase context")

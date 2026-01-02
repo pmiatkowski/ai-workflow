@@ -29,6 +29,7 @@ The system uses a hybrid approach where:
 │   ├── update-feature.md
 │   ├── define-implementation-plan.md
 │   ├── execute.md         # Execute implementation plan
+│   ├── define-idea.md     # Idea refinement and exploration
 │   ├── triage-bug.md      # Bug diagnosis and root cause
 │   └── plan-fix.md        # Lightweight bug fix planning
 └── scripts/               # Python utilities
@@ -61,7 +62,46 @@ The system uses a hybrid approach where:
     │   └── round-{n}.md
     ├── triage.md          # Root cause diagnosis and fix approach
     └── fix-plan.md        # Lightweight fix implementation checklist
+
+.ai-workflow/ideas/        # Idea workflow storage
+└── {idea-name}/
+    ├── state.yml          # Idea status tracking
+    ├── description.md     # Original idea description
+    ├── context.md         # Optional context
+    ├── refinement/        # Refinement rounds (iterative Q&A)
+    │   └── round-{n}.md
+    └── refined-idea.md    # Synthesized idea document (after refinement)
 ```
+
+### Global Context Files
+
+```text
+.ai-workflow/
+├── tech-stack.md          # Global technology stack definition
+└── coding-rules/          # Coding standards and best practices
+    ├── index.md           # Entry point listing all rule categories
+    ├── {category}/        # Category-specific rules
+    │   ├── index.md       # Category overview and rule listing
+    │   └── {rule}.md      # Individual rule files
+    └── ...
+```
+
+**Tech Stack** (`tech-stack.md`):
+
+- Defines technologies, versions, and integrations used across the project
+- Created via `/define-tech-stack` command through guided wizard questions
+- Automatically included when creating PRDs and implementation plans
+- Updated as technology choices evolve
+- Provides consistent tech context for all features
+
+**Coding Rules** (`coding-rules/`):
+
+- Collection of coding standards organized by category (e.g., react/, typescript/, testing/)
+- User-maintained manually (no creation prompt currently)
+- Only included during implementation planning (`/define-implementation-plan`)
+- Not included in PRDs (PRDs focus on *what*, coding rules guide *how*)
+- Hierarchical structure: index → category index → rule files
+- Example categories: component architecture, naming conventions, type safety, testing patterns
 
 ### Configuration System
 
@@ -73,6 +113,7 @@ The system uses a hybrid approach where:
 **Key Config Paths**:
 - `paths.features`: Location of feature folders (default: `.ai-workflow/features`)
 - `paths.bugs`: Location of bug folders (default: `.ai-workflow/bugs`)
+- `paths.ideas`: Location of idea folders (default: `.ai-workflow/ideas`)
 - `paths.prompts`: Location of prompt templates
 - `paths.scripts`: Location of Python scripts
 - `defaults.date_format`: Date format for state files (default: `%Y-%m-%d`)
@@ -81,8 +122,187 @@ The system uses a hybrid approach where:
 **Workflow Types**:
 - `workflow_types.feature`: Feature workflow configuration (states, artifacts, classification keywords)
 - `workflow_types.bug`: Bug workflow configuration (simplified, faster process)
+- `workflow_types.idea`: Idea workflow configuration (pre-workflow exploration and refinement)
 
-**Note**: Features and bugs are stored in separate folders to maintain clear organization of workflow artifacts.
+**Note**: Features, bugs, and ideas are stored in separate folders to maintain clear organization of workflow artifacts.
+
+**Clarification Settings** (`clarification` section):
+- `format_version`: Version of clarification format (2.0 = sequential)
+- `default_question_count`: Default number of questions to plan (default: 5)
+- `allow_followups`: Enable dynamic follow-up questions (default: true)
+- `show_progress`: Display progress indicator like "Question 3/5+" (default: true)
+- `max_followups_per_round`: Limit follow-ups to prevent question explosion (default: 2)
+
+## Sequential Clarification System
+
+### Overview
+
+The workflow uses a **sequential one-by-one question format** for all clarification-based prompts (`/clarify`, `/define-idea`, `/triage-bug`). Instead of asking multiple questions at once, the AI asks ONE question at a time with THREE predefined options (A, B, C) plus the ability to provide a custom answer.
+
+### Question Format (Standardized)
+
+```
+Question {n}/{total}+
+
+{Question text}
+
+Options:
+  A: {First approach/scenario}
+  B: {Second approach/scenario}
+  C: {Third approach/scenario}
+
+Recommendation: {Option X}, because {clear reasoning}
+
+---
+You can select A, B, or C, or provide your own answer.
+```
+
+### Round File Format with Metadata
+
+All clarification rounds now include metadata for state tracking:
+
+```markdown
+# [Clarification|Refinement] Round {n}
+
+<!-- METADATA
+format_version: 2.0
+round_type: sequential
+planned_questions: 5
+current_question: 3
+allow_followups: true
+-->
+
+## Date
+{YYYY-MM-DD}
+
+## Questions & Answers
+
+### Q1: {question text}
+**Options:**
+- A: {option A}
+- B: {option B}
+- C: {option C}
+
+**Recommendation:** {Option X}, because {reasoning}
+
+**Answer:** {user's answer (A/B/C or custom text)}
+
+### Q2: {question text}
+...
+```
+
+**Metadata Fields:**
+- `format_version`: "2.0" indicates sequential format
+- `round_type`: "sequential" (vs legacy batch format)
+- `planned_questions`: Total number of questions planned for this round
+- `current_question`: Last answered question number (for resumption)
+- `allow_followups`: Whether dynamic follow-ups are allowed
+
+### Resumption Logic
+
+If a clarification session is interrupted, the AI can resume by:
+1. Reading the round file
+2. Parsing metadata to find `current_question`
+3. Continuing from `current_question + 1`
+
+Example:
+```
+Resuming clarifications/round-01 (continuing from Question 3/5)...
+
+Question 4/5+
+...
+```
+
+### Hybrid Question Approach
+
+The system uses a **hybrid approach**:
+- AI plans initial questions upfront (e.g., 5 questions)
+- Can add follow-up questions dynamically based on answers
+- Progress shown as "Question 3/5+" (the "+" indicates potential additional questions)
+
+### Option Generation Guidelines
+
+Options are generated based on **common industry patterns** (priority) and different solution approaches (secondary):
+
+**For Features (/clarify):**
+- Research typical solutions from similar projects
+- Check context.md for tech stack hints
+- Present 3 most common approaches with trade-offs
+
+**For Ideas (/define-idea):**
+- Present problem/solution scenarios
+- Use evidence levels (strong/moderate/assumption-based)
+- Support exploration without being judgmental
+
+**For Bugs (/triage-bug):**
+- Present diagnostic scenarios
+- Use common failure patterns
+- Help narrow down root cause
+
+### Backward Compatibility
+
+- **Old format rounds** (multi-question, no metadata) remain valid
+- **New format rounds** (sequential, with metadata) are created for new sessions
+- Both formats coexist without migration needed
+- AI detects format by checking for metadata in round file
+
+### Examples
+
+**Feature Clarification (/clarify):**
+```
+Question 1/5+
+
+Should users be able to reset their password?
+
+Options:
+  A: Yes, via email link (most common, secure)
+  B: Yes, via SMS code (faster, requires phone number)
+  C: Yes, both email and SMS options (maximum flexibility)
+
+Recommendation: Option A, because email-based password reset is the industry
+standard, requires no additional PII (phone numbers), and provides better
+security with time-limited tokens.
+
+---
+You can select A, B, or C, or provide your own answer.
+```
+
+**Idea Refinement (/define-idea Round 1):**
+```
+Question 1/5+
+
+What specific problem does this idea primarily address?
+
+Options:
+  A: User pain point - users struggling with current workflow or process
+  B: Business opportunity - potential for revenue or competitive advantage
+  C: Technical improvement - reducing technical debt or improving maintainability
+
+Recommendation: Option A, because ideas grounded in user pain points typically
+have clearer adoption metrics and measurable impact on user satisfaction.
+
+---
+You can select A, B, or C, or provide your own answer.
+```
+
+**Bug Triage (/triage-bug):**
+```
+Question 1/3
+
+How consistently does the login timeout occur?
+
+Options:
+  A: Happens every time for all users (100% reproducible)
+  B: Happens intermittently, roughly 20-50% of attempts
+  C: Happens only under specific conditions (certain users, times, or actions)
+
+Recommendation: Understanding consistency helps identify the failure type. Option A
+suggests a code-level bug or configuration error, Option B suggests resource contention
+or race conditions, Option C suggests environment-specific or data-dependent issues.
+
+---
+You can select A, B, or C, or provide your own answer.
+```
 
 ## Workflow Commands
 
@@ -107,6 +327,14 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 /add Implement dark mode                 → Feature
 ```
 
+### Global Context Commands
+
+| Command              | Type   | Purpose                                      | Script Invoked |
+|----------------------|--------|----------------------------------------------|----------------|
+| `/define-tech-stack` | Prompt | Define global tech stack through wizard Q&A | None           |
+
+**Note**: Tech stack is automatically included in PRDs and implementation plans once defined.
+
 ### Feature Workflow Commands
 
 | Command | Type | Purpose | Script Invoked |
@@ -128,6 +356,17 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 | `/clarify {name}` | Prompt | Clarification Q&A (optional) | None |
 | `/triage-bug {name}` | Prompt | Diagnose root cause | None |
 | `/plan-fix {name}` | Prompt | Create lightweight fix checklist | None |
+
+### Idea Workflow Commands
+
+| Command | Type | Purpose | Script Invoked |
+|---------|------|---------|----------------|
+| `/define-idea {description}` | Prompt→Script | Initialize and refine idea through Q&A | `init-workflow.py` |
+| `/define-idea {name}` | Prompt | Continue refinement rounds | None |
+| `/add-context {name}` | Prompt | Add context (optional) | None |
+| `/clarify {name}` | Prompt | Additional clarification (optional) | None |
+
+**Note**: Ideas are standalone and don't auto-classify. Users explicitly create ideas with `/define-idea` instead of `/add`.
 
 ### Execution Pattern
 
@@ -156,10 +395,11 @@ When AI receives `/add-feature user-auth "Allow login with email/password"`:
 
 ### Workflow Types
 
-The system supports two workflow types:
+The system supports three workflow types:
 
 1. **Feature Workflow** (`.ai-workflow/features/`)
 2. **Bug Workflow** (`.ai-workflow/bugs/`)
+3. **Idea Workflow** (`.ai-workflow/ideas/`)
 
 ### Feature States
 
@@ -190,6 +430,22 @@ reported → triaged → fixing → resolved → closed
 - `status`: Current state
 - `created`: Creation date
 - `updated`: Last modification date
+
+### Idea States
+
+Ideas transition through these states:
+
+```
+exploring → refined → shelved → converted
+```
+
+**state.yml** tracks:
+- `workflow_type`: Type of workflow (idea)
+- `name`: Idea name (kebab-case)
+- `status`: Current state
+- `created`: Creation date
+- `updated`: Last modification date
+- `converted_to`: If converted, stores "feature:{name}" or "bug:{name}"
 
 ### Implementation Plan States
 
@@ -230,6 +486,7 @@ All follow-up commands support optional workflow names:
 - `/execute` → `/execute {name}` (features only)
 - `/triage-bug` → `/triage-bug {name}` (bugs only)
 - `/plan-fix` → `/plan-fix {name}` (bugs only)
+- `/define-idea` → `/define-idea {name}` (ideas only)
 
 ### Global State Structure
 
@@ -237,7 +494,7 @@ All follow-up commands support optional workflow names:
 version: 1
 current:
   name: user-auth           # Current workflow name
-  workflow_type: feature    # "feature" | "bug"
+  workflow_type: feature    # "feature" | "bug" | "idea"
   set_date: 2025-12-28      # When context was set
   set_method: manual        # "auto" | "manual"
 last_updated: 2025-12-28
@@ -278,6 +535,7 @@ Commands validate workflow types automatically:
 4. **Version Controlled**: All artifacts (PRDs, clarifications) stored in git alongside code
 5. **Deterministic Scripts**: File operations use Python scripts for consistency
 6. **Cognitive Prompts**: Synthesis/analysis tasks handled by AI via prompts
+7. **Global Context Awareness**: Tech stack and coding rules provide consistent guardrails across all features
 
 ## PRD Format
 
@@ -371,16 +629,16 @@ scripts/
 
 ## Workflow Comparison
 
-| Aspect | Feature Workflow | Bug Workflow |
-|--------|------------------|--------------|
-| **Command** | `/add "Add X"` or `/add-feature` | `/add "Fix X"` (auto-detected) |
-| **States** | clarifying → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed |
-| **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` |
-| **PRD Required** | ✓ Yes (full PRD) | ✗ No (skip PRD) |
-| **Context** | ✓ context.md (recommended) | ✓ context.md (optional) |
-| **Clarifications** | ✓ clarifications/ (multi-round) | ✓ clarifications/ (optional) |
-| **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist |
-| **Main Flow** | add → clarify → create-prd → plan → execute | add → triage → plan-fix |
+| Aspect | Feature Workflow | Bug Workflow | Idea Workflow |
+|--------|------------------|--------------|---------------|
+| **Command** | `/add "Add X"` or `/add-feature` | `/add "Fix X"` (auto-detected) | `/define-idea "description"` (explicit) |
+| **States** | clarifying → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
+| **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` | `.ai-workflow/ideas/{name}/` |
+| **PRD Required** | ✓ Yes (full PRD) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
+| **Context** | ✓ context.md (recommended) | ✓ context.md (optional) | ✓ context.md (optional) |
+| **Clarifications** | ✓ clarifications/ (multi-round) | ✓ clarifications/ (optional) | ✓ refinement/ rounds (2-3 typical) |
+| **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist | ✗ No (pre-workflow exploration) |
+| **Main Flow** | add → clarify → create-prd → plan → execute | add → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
 
 ## Common Workflows
 
@@ -425,6 +683,32 @@ scripts/
 # Ready to implement!
 ```
 
+### Creating an Idea
+
+```
+/define-idea "Add AI-powered search to documentation"
+# AI creates .ai-workflow/ideas/ai-powered-search/
+# AI asks clarifying questions about problem, context, success criteria
+# User answers
+
+/define-idea ai-powered-search
+# Round 2: AI tests assumptions, explores alternatives
+# User responds with thoughts
+
+# AI offers to synthesize
+synthesize
+
+# AI creates refined-idea.md with:
+# - Problem/solution analysis
+# - Assumptions tested (desirability, viability, feasibility, usability, risks)
+# - Alternatives considered
+# - Recommended next steps
+
+# User decides:
+/add "Implement semantic search based on ai-powered-search idea"
+# Or: shelve for later, do more research, etc.
+```
+
 ### Updating After PRD (Features Only)
 
 ```
@@ -433,15 +717,57 @@ scripts/
 # AI creates updates/update-{n}.md and may trigger new clarification
 ```
 
+### Defining Tech Stack (One-Time Setup)
+
+```
+/define-tech-stack
+# AI asks sequential questions about your tech stack:
+# - Primary language and version
+# - Frontend framework
+# - Backend framework
+# - Database(s)
+# - External services
+# - Hosting/deployment
+# - Testing frameworks
+# Answer questions (select A/B/C or provide custom answers)
+
+# AI creates .ai-workflow/tech-stack.md
+
+# Review and update as needed
+/define-tech-stack
+# Choose "Update existing" to make changes
+```
+
+### Adding Coding Rules (Manual)
+
+```
+# Create coding rules structure manually
+mkdir -p .ai-workflow/coding-rules/react
+mkdir -p .ai-workflow/coding-rules/typescript
+
+# Create index.md at root (.ai-workflow/coding-rules/index.md)
+# Example content:
+# # Rule Set: Project Name
+# - [React Standards](./react/index.md) - React coding standards
+# - [TypeScript Standards](./typescript/index.md) - TypeScript best practices
+
+# Create category indices (e.g., .ai-workflow/coding-rules/react/index.md)
+# Add rule files (e.g., .ai-workflow/coding-rules/react/component-architecture.md)
+
+# Rules will automatically be referenced in implementation plans
+```
+
 ## Notes for Future Claude Instances
 
 - **Use `/add` command**: New unified command that auto-classifies features vs bugs
 - **AI Classification**: Analyze description for keywords (fix/bug/error → bug; add/implement/create → feature)
+- **Idea workflow is separate**: Ideas use `/define-idea` command, not `/add` - they're pre-workflow exploration
 - **Don't auto-scan codebases**: Wait for user to provide context via `/add-context`
 - **Prompt files are instructions**: Read them fully before executing commands
 - **State transitions matter**: Check `state.yml` before running commands (e.g., PRD must exist before implementation plan)
-- **Workflow-specific states**: Features have different states than bugs (see State Management section)
+- **Workflow-specific states**: Features, bugs, and ideas each have different state transitions (see State Management section)
 - **Item names are kebab-case**: Scripts normalize automatically
 - **"TBD" is valid**: Better to acknowledge missing info than invent details
 - **Scripts must be invoked from project root**: Config loader walks up from cwd to find `.ai-workflow/config.yml`
 - **Bug workflow is lighter**: No PRD required, simpler planning, optional context/clarifications
+- **Idea workflow is exploratory**: Focuses on refinement and assumption testing, not implementation. Ideas can be converted to features/bugs when ready

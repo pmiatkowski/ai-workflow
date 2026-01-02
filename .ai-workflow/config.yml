@@ -7,14 +7,25 @@ version: 1
 paths:
   features: .ai-workflow/features
   bugs: .ai-workflow/bugs          # Bug workflow storage
+  ideas: .ai-workflow/ideas        # Idea workflow storage
   prompts: .ai-workflow/prompts
   scripts: .ai-workflow/scripts
   memory: .ai-workflow/memory      # Global workflow state
+  tech_stack: .ai-workflow/tech-stack.md     # Global tech stack definition
+  coding_rules: .ai-workflow/coding-rules    # Coding standards and best practices
 
 # Default values
 defaults:
   date_format: "%Y-%m-%d"
   workflow_type: feature
+
+# Clarification system settings
+clarification:
+  format_version: 2.0              # Sequential one-by-one format
+  default_question_count: 5        # Default number of planned questions
+  allow_followups: true            # Allow dynamic follow-up questions
+  show_progress: true              # Show "Question 3/5+" progress indicator
+  max_followups_per_round: 2       # Limit follow-up questions to prevent explosion
 
 # Workflow type definitions
 workflow_types:
@@ -58,6 +69,18 @@ workflow_types:
       - issue
       - failing
       - timeout
+
+  idea:
+    base_path: ideas
+    states: [exploring, refined, shelved, converted]
+    initial_state: exploring
+    artifacts:
+      - state.yml
+      - description.md
+      - context.md
+      - refinement/
+      - refined-idea.md
+    classification_keywords: []  # Ideas don't auto-classify
 
 # Future expansion: polyglot script support
 # runner: python | bash | powershell

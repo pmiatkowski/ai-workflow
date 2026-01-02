@@ -22,6 +22,8 @@ class PathsConfig:
     prompts: str = ".ai-workflow/prompts"
     scripts: str = ".ai-workflow/scripts"
     memory: str = ".ai-workflow/memory"
+    tech_stack: str = ".ai-workflow/tech-stack.md"
+    coding_rules: str = ".ai-workflow/coding-rules"
 
 
 @dataclass
@@ -121,6 +123,8 @@ class Config:
                 prompts=paths_data.get("prompts", ".ai-workflow/prompts"),
                 scripts=paths_data.get("scripts", ".ai-workflow/scripts"),
                 memory=paths_data.get("memory", ".ai-workflow/memory"),
+                tech_stack=paths_data.get("tech_stack", ".ai-workflow/tech-stack.md"),
+                coding_rules=paths_data.get("coding_rules", ".ai-workflow/coding-rules"),
             ),
             defaults=DefaultsConfig(
                 date_format=defaults_data.get("date_format", "%Y-%m-%d"),
@@ -165,6 +169,23 @@ class Config:
     def get_global_state_path(self) -> Path:
         """Get absolute path to global state file."""
         return self.get_memory_path() / "global-state.yml"
+
+    def get_tech_stack_path(self) -> Path:
+        """Get absolute path to tech-stack.md."""
+        return Path(self.paths.tech_stack)
+
+    def get_coding_rules_path(self) -> Path:
+        """Get absolute path to coding-rules directory."""
+        return Path(self.paths.coding_rules)
+
+    def tech_stack_exists(self) -> bool:
+        """Check if tech stack file exists."""
+        return self.get_tech_stack_path().exists()
+
+    def coding_rules_exist(self) -> bool:
+        """Check if coding rules index exists."""
+        index_path = self.get_coding_rules_path() / "index.md"
+        return index_path.exists()
 
 
 # Global config instance - loaded on import

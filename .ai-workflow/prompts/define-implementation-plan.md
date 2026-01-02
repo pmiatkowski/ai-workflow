@@ -99,10 +99,46 @@ Read and understand the following files:
 .ai-workflow/features/{feature-name}/
 ├── prd.md                  # Functional requirements (FR-1, FR-2, ...)
 ├── context.md              # Technical considerations
-└── implementation-plan/    # Acceptance criteria
+└── implementation-plan/
     ├── plan-state.yml
     └── plan.md
 ```
+
+**Also read global context (if available):**
+
+```
+.ai-workflow/
+├── tech-stack.md           # Global tech stack (optional)
+└── coding-rules/           # Coding standards (optional)
+    └── index.md
+```
+
+**Tech Stack Usage:**
+
+If `tech-stack.md` exists, use it to inform:
+
+- Technology choices in implementation tasks
+- Version requirements
+- Integration approaches
+- Testing strategies
+
+**Coding Rules Usage:**
+
+If `coding-rules/index.md` exists:
+
+1. Read the index to understand available rule categories
+2. Read relevant category indices based on tech stack (e.g., react/index.md, typescript/index.md)
+3. Scan relevant rule files (limit to 3-5 most applicable rules)
+4. Incorporate rules into task descriptions
+
+**Example**: If tech stack uses React 19 and TypeScript 5, read:
+
+- `coding-rules/react/index.md` → identify relevant rules
+- `coding-rules/react/component-architecture.md`
+- `coding-rules/typescript/index.md` → identify relevant rules
+- `coding-rules/typescript/type-safety.md`
+
+**If files missing**: Proceed without (no error needed).
 
 ### 5. Generate Implementation Plan
 
@@ -165,6 +201,12 @@ Fill `implementation-plan/plan.md` using this structure:
 ## Notes
 
 {Any implementation notes, risks, or considerations}
+
+### Coding Standards References
+
+{If coding rules exist, list key rules that apply to this implementation:}
+- {Rule category}: {Brief description or link to rule file}
+- {Rule category}: {Brief description or link to rule file}
 ```
 
 ### 6. Planning Rules
@@ -181,6 +223,9 @@ Fill `implementation-plan/plan.md` using this structure:
 - One task = one logical unit of work
 - Prefix with phase number (1.1, 1.2, 2.1, ...)
 - Be specific — "Implement login form" not "Build frontend"
+- **Include coding standards**: Reference specific coding rules when applicable
+  - Example: "Task 1.1: Create LoginForm component following React component architecture standards (see coding-rules/react/component-architecture.md)"
+  - Example: "Task 2.3: Implement type-safe API client (see coding-rules/typescript/type-safety.md)"
 
 **Mapping from PRD:**
 - Each FR should map to at least one task

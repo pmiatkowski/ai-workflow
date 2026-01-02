@@ -71,6 +71,22 @@ Read everything from `.ai-workflow/features/{name}/`:
     └── ...
 ```
 
+**Also read global context (if available):**
+
+```
+.ai-workflow/
+└── tech-stack.md        # Global tech stack (optional)
+```
+
+If `tech-stack.md` exists, read it to understand:
+
+- Technology constraints for the feature
+- Existing integrations to leverage
+- Version compatibility requirements
+- Technical patterns to follow
+
+If missing, proceed without it (no error needed).
+
 ### 3. Validate Readiness
 
 Before generating PRD, check:
@@ -136,7 +152,16 @@ Create `prd.md` using this exact structure:
 ...
 
 ## Technical Considerations
-{Constraints, dependencies, integration points, architectural notes}
+{Base this section on:
+- Global tech stack (.ai-workflow/tech-stack.md) if available
+- Feature-specific context (context.md)
+- Constraints, dependencies, integration points from clarifications
+
+Include:
+- Which technologies from the stack will be used
+- Integration points with existing services
+- Version compatibility notes
+- Architectural constraints}
 
 ## Acceptance Criteria
 
