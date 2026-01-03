@@ -126,18 +126,23 @@ If `workflow_type == "feature"`:
 - If `artifacts.implementation_plan == false`:
   - Primary: `/define-implementation-plan` - Create implementation plan
 - Else:
-  - Note: Plan exists but state shows prd-approved (review plan)
+  - Primary: `/verify` - Verify plan against coding standards (recommended)
+  - Secondary: Review `implementation-plan/plan.md`
+  - Note: Plan exists, ready for verification and execution
 
 **Status: planning**
 
 - If `plan_state.status == "pending"`:
   - Primary: Review `implementation-plan/plan.md`
-  - Secondary: `/execute` - Start execution when ready
+  - Secondary: `/verify` - Verify plan against coding standards (recommended)
+  - Tertiary: `/execute` - Start execution when ready
 - Else if `plan_state.status == "in-progress"`:
   - Primary: `/execute` - Continue with Phase {current_phase}
+  - Secondary: `/verify` - Verify implementation against plan and standards
 - Else if `plan_state.status == "completed"`:
-  - Primary: Testing and validation
-  - Secondary: `/update-feature` - For any changes
+  - Primary: `/verify` - Verify final implementation (recommended)
+  - Secondary: Testing and validation
+  - Tertiary: `/update-feature` - For any changes
 
 **Status: in-progress**
 
@@ -161,17 +166,20 @@ If `workflow_type == "bug"`:
 - If `artifacts.fix_plan_md == false`:
   - Primary: `/plan-fix` - Create fix checklist
 - Else:
-  - Primary: Implement fix following `fix-plan.md`
+  - Primary: `/verify` - Verify fix plan against coding standards (recommended)
+  - Secondary: Implement fix following `fix-plan.md`
 
 **Status: fixing**
 
 - Primary: Continue implementing fix
-- Secondary: Test the fix
+- Secondary: `/verify` - Verify implementation against fix plan
+- Tertiary: Test the fix
 
 **Status: resolved**
 
-- Primary: Final testing and verification
-- Secondary: Update state to `closed` when verified
+- Primary: `/verify` - Verify final fix against standards (recommended)
+- Secondary: Final testing and verification
+- Tertiary: Update state to `closed` when verified
 
 **Status: closed**
 
@@ -286,6 +294,10 @@ Phase {current_phase} of {total_phases}: {phase_name}
 
 ### Setup Commands
 - `/define-tech-stack` - Define global tech stack (one-time setup)
+- `/define-coding-instructions` - Define coding standards and practices (one-time setup)
+
+### Quality Assurance Commands
+- `/verify [name]` - Verify implementation plan or code against coding standards
 
 ### Feature Commands
 - `/create-prd [name]` - Generate PRD from clarifications
@@ -370,6 +382,14 @@ Define your project's tech stack (automatically included in PRDs and plans):
 
 ```
 
+Define coding instructions and development standards (automatically included in implementation plans):
+
+```
+
+/define-coding-instructions
+
+```
+
 ## Workflow Types
 
 ### Feature Workflow (Full PRD Process)
@@ -383,7 +403,9 @@ For new functionality, enhancements, or capabilities.
 3. `/clarify` - Answer requirements questions
 4. `/create-prd` - Generate PRD document
 5. `/define-implementation-plan` - Break into phases
-6. `/execute` - Implement each phase
+6. `/verify` - Verify plan against coding standards (recommended)
+7. `/execute` - Implement each phase
+8. `/verify` - Verify implementation against plan and standards
 
 ### Bug Workflow (Lightweight Fix Process)
 For fixes, issues, and errors.
@@ -395,7 +417,9 @@ For fixes, issues, and errors.
 2. `/add-context` - Provide context (optional)
 3. `/triage-bug` - Diagnose root cause
 4. `/plan-fix` - Create fix checklist
-5. Implement and test fix
+5. `/verify` - Verify fix plan against coding standards (recommended)
+6. Implement and test fix
+7. `/verify` - Verify implementation against plan and standards
 
 ### Idea Workflow (Exploratory Refinement)
 For exploring and refining ideas before committing to implementation.
@@ -423,6 +447,10 @@ For exploring and refining ideas before committing to implementation.
 
 ### Setup Commands
 - `/define-tech-stack` - Define global tech stack (one-time setup)
+- `/define-coding-instructions` - Define coding standards and practices (one-time setup)
+
+### Quality Assurance Commands
+- `/verify [name]` - Verify implementation plan or code against coding standards
 
 ### Feature Commands
 - `/create-prd [name]` - Generate PRD from clarifications

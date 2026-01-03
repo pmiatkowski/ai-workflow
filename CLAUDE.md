@@ -344,11 +344,21 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 
 ### Global Context Commands
 
-| Command              | Type   | Purpose                                      | Script Invoked |
-|----------------------|--------|----------------------------------------------|----------------|
-| `/define-tech-stack` | Prompt | Define global tech stack through wizard Q&A | None           |
+| Command                       | Type   | Purpose                                      | Script Invoked |
+|-------------------------------|--------|----------------------------------------------|----------------|
+| `/define-tech-stack`          | Prompt | Define global tech stack through wizard Q&A | None           |
+| `/define-coding-instructions` | Prompt | Define coding instructions and standards through Q&A | None           |
 
-**Note**: Tech stack is automatically included in PRDs and implementation plans once defined.
+**Note**: Tech stack and coding instructions are automatically included in implementation plans once defined. Tech stack is also included in PRDs.
+
+### Verification Command
+
+| Command          | Type   | Purpose                                                           | Script Invoked |
+|------------------|--------|-------------------------------------------------------------------|----------------|
+| `/verify`        | Prompt | Verify plan/code against coding standards (uses current context) | None           |
+| `/verify {name}` | Prompt | Verify specific workflow against coding standards                | None           |
+
+**Note**: Verification analyzes implementation plans or actual code against coding standards defined in `.ai-workflow/memory/coding-rules/`. Reports are saved in `.ai-workflow/reports/` with timestamp history. This is a read-only operation that does not modify any files.
 
 ### Feature Workflow Commands
 
@@ -652,6 +662,7 @@ scripts/
 | **Context** | ✓ context.md (recommended) | ✓ context.md (optional) | ✓ context.md (optional) |
 | **Clarifications** | ✓ clarifications/ (multi-round) | ✓ clarifications/ (optional) | ✓ refinement/ rounds (2-3 typical) |
 | **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist | ✗ No (pre-workflow exploration) |
+| **Verification** | ✓ /verify (plan and code) | ✓ /verify (fix-plan and code) | ✗ No verification support |
 | **Main Flow** | add → clarify → create-prd → plan → execute | add → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
 
 ## Common Workflows
@@ -731,6 +742,23 @@ synthesize
 # AI creates updates/update-{n}.md and may trigger new clarification
 ```
 
+### Verifying Implementation
+
+```
+# Verify implementation plan against coding standards (after planning)
+/verify user-profile
+# AI reads plan and coding standards
+# AI generates report in .ai-workflow/reports/
+
+# Verify actual code against plan and standards (after execution)
+/verify user-profile code
+# Provide file paths when prompted
+# AI analyzes code and generates detailed report
+
+# Reports are timestamped for history
+# View latest: .ai-workflow/reports/verification-user-profile-latest.report.md
+```
+
 ### Defining Tech Stack (One-Time Setup)
 
 ```
@@ -752,23 +780,38 @@ synthesize
 # Choose "Update existing" to make changes
 ```
 
-### Adding Coding Rules (Manual)
+### Defining Coding Instructions (One-Time Setup)
 
 ```
-# Create coding rules structure manually
+/define-coding-instructions
+# AI asks sequential questions about coding standards:
+# - Development methodology (TDD/BDD/etc.)
+# - Testing coverage philosophy
+# - Architectural principles (SOLID, DRY, etc.)
+# - Code review standards
+# - Documentation standards
+# - Additional standards
+# Answer questions (select A/B/C or provide custom answers)
+
+# AI creates .ai-workflow/memory/coding-rules/index.md
+
+# Review and update as needed
+/define-coding-instructions
+# Choose "Update existing" to make changes
+```
+
+**Note**: After creating the base index.md, you can manually add category-specific rules:
+
+```
+# Create category directories manually
 mkdir -p .ai-workflow/memory/coding-rules/react
 mkdir -p .ai-workflow/memory/coding-rules/typescript
 
-# Create index.md at root (.ai-workflow/memory/coding-rules/index.md)
-# Example content:
-# # Rule Set: Project Name
-# - [React Standards](./react/index.md) - React coding standards
-# - [TypeScript Standards](./typescript/index.md) - TypeScript best practices
-
 # Create category indices (e.g., .ai-workflow/memory/coding-rules/react/index.md)
 # Add rule files (e.g., .ai-workflow/memory/coding-rules/react/component-architecture.md)
+# Link categories in the main index.md
 
-# Rules will automatically be referenced in implementation plans
+# Category-specific rules will automatically be referenced in implementation plans
 ```
 
 ## Notes for Future Claude Instances

@@ -13,6 +13,7 @@ paths:
   memory: .ai-workflow/memory      # Global workflow state
   tech_stack: .ai-workflow/memory/tech-stack.md     # Global tech stack definition
   coding_rules: .ai-workflow/memory/coding-rules    # Coding standards and best practices
+  reports: .ai-workflow/reports    # Verification reports storage
 
 # Default values
 defaults:

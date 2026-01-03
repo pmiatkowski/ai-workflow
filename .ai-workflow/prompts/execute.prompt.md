@@ -114,6 +114,8 @@ Current status: {status}
 Current phase: {current_phase} of {total_phases}
 Next phase: Phase {N}: {Phase Name} ({X} tasks)
 
+💡 Tip: Run /verify first to check plan against coding standards
+
 How would you like to proceed?
 
 1. Execute Phase {N} only (Recommended)
@@ -241,8 +243,9 @@ Deliverables:
   - {deliverable}
 
 Next steps:
-  Run /execute to continue with Phase {N+1}: {Next Phase Name}
-  OR review changes and test Phase {N} deliverables before proceeding
+  1. Run /verify to validate implementation against plan and standards (Recommended)
+  2. Review changes and test Phase {N} deliverables
+  3. Run /execute to continue with Phase {N+1}: {Next Phase Name}
 ```
 
 ### 5B. Execute Entire Plan
@@ -294,9 +297,10 @@ Summary:
 Implementation complete. Feature is ready for testing.
 
 Next steps:
-  1. Run tests to verify deliverables
-  2. Review changes
-  3. Update feature state to 'in-progress' if needed
+  1. Run /verify to validate implementation against plan and standards (Recommended)
+  2. Run tests to verify deliverables
+  3. Review changes
+  4. Update feature state to 'in-progress' if needed
 ```
 
 ### 6. Update Feature State (Optional)

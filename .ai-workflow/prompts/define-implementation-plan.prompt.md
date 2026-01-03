@@ -277,8 +277,9 @@ Scope: {Small | Medium | Large}
 
 Next steps for USER:
   1. Review implementation-plan/plan.md
-  2. Adjust phases/tasks as needed
-  3. When ready, begin implementation (separate command)
+  2. Run /verify to check plan against coding standards (Recommended)
+  3. Adjust phases/tasks as needed
+  4. When ready, begin implementation: /execute
 ```
 
 ### 9. Stop Here
