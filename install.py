@@ -36,13 +36,13 @@ def main():
 
     # 1. Check if already installed
     if Path('.aiconfig').exists():
-        print("❌ Already installed. Remove .aiconfig to reinstall.")
+        print("[ERROR] Already installed. Remove .aiconfig to reinstall.")
         sys.exit(1)
 
     # 2. Validate prerequisites
     if not Path('.ai-workflow').exists():
-        print("❌ Error: .ai-workflow folder not found")
-        print("   Make sure you're running this from the project root.")
+        print("[ERROR] .ai-workflow folder not found")
+        print("        Make sure you're running this from the project root.")
         sys.exit(1)
 
     # 3. Get user input
@@ -58,12 +58,12 @@ def main():
     try:
         validate_folder_name(folder_name)
     except ValueError as e:
-        print(f"❌ {e}")
+        print(f"[ERROR] {e}")
         sys.exit(1)
 
     # 5. Check for conflicts
     if Path(folder_name).exists():
-        print(f"❌ Error: {folder_name} already exists")
+        print(f"[ERROR] {folder_name} already exists")
         sys.exit(1)
 
     # 6. Preview changes
@@ -90,10 +90,10 @@ def main():
         create_config_marker(folder_name)
         print()
         print("=" * 60)
-        print(f"✓ Installation complete! Workflow folder: {folder_name}")
+        print(f"[SUCCESS] Installation complete! Workflow folder: {folder_name}")
         print("=" * 60)
     except Exception as e:
-        print(f"❌ Error during installation: {e}")
+        print(f"[ERROR] Installation failed: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
@@ -106,7 +106,7 @@ def validate_folder_name(name):
     if ' ' in name:
         raise ValueError("Folder name cannot contain spaces")
     if not name.startswith('.'):
-        print(f"⚠️  Warning: {name} doesn't start with '.' - continuing anyway")
+        print(f"[WARNING] {name} doesn't start with '.' - continuing anyway")
     # Check for invalid path characters (Windows + Unix)
     invalid_chars = '<>:"|?*'
     if any(c in name for c in invalid_chars):
@@ -116,7 +116,7 @@ def validate_folder_name(name):
 def rename_workflow_folder(new_name):
     """Rename .ai-workflow to custom name"""
     os.rename('.ai-workflow', new_name)
-    print(f"✓ Renamed .ai-workflow → {new_name}")
+    print(f"[OK] Renamed .ai-workflow -> {new_name}")
 
 
 def update_file_contents(new_folder_name):
@@ -140,7 +140,7 @@ def update_file_contents(new_folder_name):
                 total_replacements += replacements
                 files_updated += 1
 
-    print(f"✓ Updated {total_replacements} references across {files_updated} files")
+    print(f"[OK] Updated {total_replacements} references across {files_updated} files")
 
 
 def update_vscode_settings(folder_name):
@@ -150,9 +150,9 @@ def update_vscode_settings(folder_name):
         content = settings_path.read_text(encoding='utf-8')
         updated_content = content.replace('.ai-workflow/prompts', f'{folder_name}/prompts')
         settings_path.write_text(updated_content, encoding='utf-8')
-        print("✓ Updated VSCode settings")
+        print("[OK] Updated VSCode settings")
     else:
-        print("⚠️  VSCode settings.json not found - skipping")
+        print("[WARNING] VSCode settings.json not found - skipping")
 
 
 def create_config_marker(folder_name):
@@ -164,7 +164,7 @@ customizations:
   workflow_folder: {folder_name}
 """
     Path('.aiconfig').write_text(config, encoding='utf-8')
-    print("✓ Created .aiconfig marker")
+    print("[OK] Created .aiconfig marker")
 
 
 # Helper functions
@@ -193,7 +193,7 @@ def replace_in_file(file_path, old_text, new_text):
             file_path.write_text(updated_content, encoding='utf-8')
         return count
     except Exception as e:
-        print(f"⚠️  Warning: Could not update {file_path}: {e}")
+        print(f"[WARNING] Could not update {file_path}: {e}")
         return 0
 
 
@@ -201,7 +201,7 @@ def print_preview(folder_name):
     """Show what will be changed"""
     print("Preview of changes:")
     print("-" * 60)
-    print(f"  Folder:    .ai-workflow → {folder_name}")
+    print(f"  Folder:    .ai-workflow -> {folder_name}")
     print(f"  Files:     100+ references will be updated")
     print(f"  Config:    config.yml, scripts/*.py, prompts/*.md")
     print(f"  VSCode:    .vscode/settings.json")
