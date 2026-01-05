@@ -10,7 +10,7 @@ You are a workflow guidance assistant. Your goal is to help users understand whe
 
 **Parameter resolution:**
 
-1. If user provided explicit name in command (`/help workflow-name`), use it
+1. If user provided explicit name in command (`/ai.help workflow-name`), use it
 2. Otherwise, use current context (script will handle this automatically)
 
 ### 2. Execute State Gathering Script
@@ -108,25 +108,25 @@ If `workflow_type == "feature"`:
 **Status: clarifying**
 
 - If `artifacts.context_md == false`:
-  - Primary: `/add-context` - Add codebase context
-  - Secondary: `/clarify` - Start requirements gathering
+  - Primary: `/ai.add-context` - Add codebase context
+  - Secondary: `/ai.clarify` - Start requirements gathering
 - Else if `artifacts.clarifications_count == 0`:
-  - Primary: `/clarify` - Start requirements gathering
+  - Primary: `/ai.clarify` - Start requirements gathering
 - Else if `artifacts.prd_md == false`:
-  - Primary: `/clarify` - Continue gathering requirements (or `/create-prd` if ready)
-  - Secondary: `/create-prd` - Generate PRD when ready
+  - Primary: `/ai.clarify` - Continue gathering requirements (or `/ai.create-prd` if ready)
+  - Secondary: `/ai.create-prd` - Generate PRD when ready
 
 **Status: prd-draft**
 
 - Primary: Review `prd.md` and manually update `state.yml` status to `prd-approved`
-- Secondary: `/update-feature` - If changes needed
+- Secondary: `/ai.update-feature` - If changes needed
 
 **Status: prd-approved**
 
 - If `artifacts.implementation_plan == false`:
-  - Primary: `/define-implementation-plan` - Create implementation plan
+  - Primary: `/ai.define-implementation-plan` - Create implementation plan
 - Else:
-  - Primary: `/verify` - Verify plan against coding standards (recommended)
+  - Primary: `/ai.verify` - Verify plan against coding standards (recommended)
   - Secondary: Review `implementation-plan/plan.md`
   - Note: Plan exists, ready for verification and execution
 
@@ -134,20 +134,20 @@ If `workflow_type == "feature"`:
 
 - If `plan_state.status == "pending"`:
   - Primary: Review `implementation-plan/plan.md`
-  - Secondary: `/verify` - Verify plan against coding standards (recommended)
-  - Tertiary: `/execute` - Start execution when ready
+  - Secondary: `/ai.verify` - Verify plan against coding standards (recommended)
+  - Tertiary: `/ai.execute` - Start execution when ready
 - Else if `plan_state.status == "in-progress"`:
-  - Primary: `/execute` - Continue with Phase {current_phase}
-  - Secondary: `/verify` - Verify implementation against plan and standards
+  - Primary: `/ai.execute` - Continue with Phase {current_phase}
+  - Secondary: `/ai.verify` - Verify implementation against plan and standards
 - Else if `plan_state.status == "completed"`:
-  - Primary: `/verify` - Verify final implementation (recommended)
+  - Primary: `/ai.verify` - Verify final implementation (recommended)
   - Secondary: Testing and validation
-  - Tertiary: `/update-feature` - For any changes
+  - Tertiary: `/ai.update-feature` - For any changes
 
 **Status: in-progress**
 
 - Primary: Continue implementation
-- Secondary: `/update-feature` - For requirement changes
+- Secondary: `/ai.update-feature` - For requirement changes
 
 #### Bug Workflow
 
@@ -156,28 +156,28 @@ If `workflow_type == "bug"`:
 **Status: reported**
 
 - If `artifacts.context_md == false`:
-  - Primary: `/add-context` - Add context (optional)
-  - Secondary: `/triage-bug` - Start diagnosis
+  - Primary: `/ai.add-context` - Add context (optional)
+  - Secondary: `/ai.triage-bug` - Start diagnosis
 - Else:
-  - Primary: `/triage-bug` - Diagnose root cause
+  - Primary: `/ai.triage-bug` - Diagnose root cause
 
 **Status: triaged**
 
 - If `artifacts.fix_plan_md == false`:
-  - Primary: `/plan-fix` - Create fix checklist
+  - Primary: `/ai.plan-fix` - Create fix checklist
 - Else:
-  - Primary: `/verify` - Verify fix plan against coding standards (recommended)
+  - Primary: `/ai.verify` - Verify fix plan against coding standards (recommended)
   - Secondary: Implement fix following `fix-plan.md`
 
 **Status: fixing**
 
 - Primary: Continue implementing fix
-- Secondary: `/verify` - Verify implementation against fix plan
+- Secondary: `/ai.verify` - Verify implementation against fix plan
 - Tertiary: Test the fix
 
 **Status: resolved**
 
-- Primary: `/verify` - Verify final fix against standards (recommended)
+- Primary: `/ai.verify` - Verify final fix against standards (recommended)
 - Secondary: Final testing and verification
 - Tertiary: Update state to `closed` when verified
 
@@ -193,12 +193,12 @@ If `workflow_type == "idea"`:
 **Status: exploring**
 
 - If `artifacts.refinement_count == 0`:
-  - Primary: `/define-idea` - Start Round 1 (Identify & Define)
+  - Primary: `/ai.define-idea` - Start Round 1 (Identify & Define)
 - Else if `artifacts.refinement_count == 1`:
-  - Primary: `/define-idea` - Continue to Round 2 (Test Assumptions)
+  - Primary: `/ai.define-idea` - Continue to Round 2 (Test Assumptions)
 - Else if `artifacts.refinement_count >= 2`:
-  - Primary: `/define-idea` - Synthesize to refined-idea.md (or continue Round 3+)
-  - Secondary: `/add-context` - Add more context if needed
+  - Primary: `/ai.define-idea` - Synthesize to refined-idea.md (or continue Round 3+)
+  - Secondary: `/ai.add-context` - Add more context if needed
 
 **Status: refined**
 
@@ -206,7 +206,7 @@ If `workflow_type == "idea"`:
   - Primary: Review `refined-idea.md` - Check recommendations and next steps
   - Secondary: Convert to feature/bug with `/add "{description based on refined idea}"`
   - Alternative: Manually update state to `shelved` if not proceeding
-  - Alternative: `/define-idea` - Add another refinement round if needed
+  - Alternative: `/ai.define-idea` - Add another refinement round if needed
 
 **Status: shelved**
 
@@ -218,7 +218,7 @@ If `workflow_type == "idea"`:
 
 - Status: Idea converted to {converted_to} (e.g., "feature:user-auth")
 - Primary: Work on the converted workflow
-- Secondary: `/set-current {converted-workflow-name}` - Switch to converted workflow
+- Secondary: `/ai.set-current {converted-workflow-name}` - Switch to converted workflow
 
 ### 6. Calculate Progress Indicator
 
@@ -287,33 +287,33 @@ Phase {current_phase} of {total_phases}: {phase_name}
 
 ### Universal Commands
 - `/add "description"` - Add new feature or bug
-- `/add-context [name]` - Add codebase/business context
-- `/clarify [name]` - Refine requirements through Q&A
-- `/set-current {name}` - Switch workflow context
-- `/help [name]` - Show this help
+- `/ai.add-context [name]` - Add codebase/business context
+- `/ai.clarify [name]` - Refine requirements through Q&A
+- `/ai.set-current {name}` - Switch workflow context
+- `/ai.help [name]` - Show this help
 
 ### Setup Commands
-- `/define-tech-stack` - Define global tech stack (one-time setup)
-- `/define-coding-instructions` - Define coding standards and practices (one-time setup)
+- `/ai.define-tech-stack` - Define global tech stack (one-time setup)
+- `/ai.define-coding-instructions` - Define coding standards and practices (one-time setup)
 
 ### Quality Assurance Commands
-- `/verify [name]` - Verify implementation plan or code against coding standards
+- `/ai.verify [name]` - Verify implementation plan or code against coding standards
 
 ### Feature Commands
-- `/create-prd [name]` - Generate PRD from clarifications
-- `/update-feature [name]` - Update requirements after PRD
-- `/define-implementation-plan [name]` - Create phased implementation plan
-- `/execute [name]` - Execute implementation plan
+- `/ai.create-prd [name]` - Generate PRD from clarifications
+- `/ai.update-feature [name]` - Update requirements after PRD
+- `/ai.define-implementation-plan [name]` - Create phased implementation plan
+- `/ai.execute [name]` - Execute implementation plan
 
 ### Bug Commands
-- `/triage-bug [name]` - Diagnose root cause and fix approach
-- `/plan-fix [name]` - Create lightweight fix checklist
+- `/ai.triage-bug [name]` - Diagnose root cause and fix approach
+- `/ai.plan-fix [name]` - Create lightweight fix checklist
 
 ### Idea Commands
-- `/define-idea "description"` - Initialize new exploratory idea
-- `/define-idea [name]` - Continue refinement rounds
-- `/add-context [name]` - Add context to idea (optional)
-- `/clarify [name]` - Additional clarification for idea (optional)
+- `/ai.define-idea "description"` - Initialize new exploratory idea
+- `/ai.define-idea [name]` - Continue refinement rounds
+- `/ai.add-context [name]` - Add context to idea (optional)
+- `/ai.clarify [name]` - Additional clarification for idea (optional)
 
 ---
 
@@ -335,13 +335,13 @@ You haven't set a current workflow context yet.
 ### Create a New Workflow
 ```
 
-/add "description of your feature or bug"
+/ai.add "description of your feature or bug"
 
 ```
 
 **Examples:**
-- `/add Fix timeout on login page` → Creates a bug
-- `/add Allow users to export data to CSV` → Creates a feature
+- `/ai.add Fix timeout on login page` → Creates a bug
+- `/ai.add Allow users to export data to CSV` → Creates a feature
 
 The system automatically classifies your request based on keywords!
 
@@ -351,7 +351,7 @@ The system automatically classifies your request based on keywords!
 ### Or Set an Existing Workflow
 ```
 
-/set-current {workflow-name}
+/ai.set-current {workflow-name}
 
 ```
 
@@ -363,12 +363,12 @@ For exploratory work before committing to a feature or bug:
 
 ```
 
-/define-idea "your idea description"
+/ai.define-idea "your idea description"
 
 ```
 
 **Example:**
-- `/define-idea "Add AI-powered search to documentation"`
+- `/ai.define-idea "Add AI-powered search to documentation"`
 
 This starts an iterative refinement process to test assumptions and explore alternatives before implementation. Ideas use a 2-3 round refinement process (Identify & Define → Test Assumptions → Synthesize) and can later be converted to features or bugs.
 
@@ -378,7 +378,7 @@ Define your project's tech stack (automatically included in PRDs and plans):
 
 ```
 
-/define-tech-stack
+/ai.define-tech-stack
 
 ```
 
@@ -386,7 +386,7 @@ Define coding instructions and development standards (automatically included in 
 
 ```
 
-/define-coding-instructions
+/ai.define-coding-instructions
 
 ```
 
@@ -399,13 +399,13 @@ For new functionality, enhancements, or capabilities.
 
 **Typical Flow**:
 1. `/add "feature description"` - Create feature
-2. `/add-context` - Provide codebase context
-3. `/clarify` - Answer requirements questions
-4. `/create-prd` - Generate PRD document
-5. `/define-implementation-plan` - Break into phases
-6. `/verify` - Verify plan against coding standards (recommended)
-7. `/execute` - Implement each phase
-8. `/verify` - Verify implementation against plan and standards
+2. `/ai.add-context` - Provide codebase context
+3. `/ai.clarify` - Answer requirements questions
+4. `/ai.create-prd` - Generate PRD document
+5. `/ai.define-implementation-plan` - Break into phases
+6. `/ai.verify` - Verify plan against coding standards (recommended)
+7. `/ai.execute` - Implement each phase
+8. `/ai.verify` - Verify implementation against plan and standards
 
 ### Bug Workflow (Lightweight Fix Process)
 For fixes, issues, and errors.
@@ -414,12 +414,12 @@ For fixes, issues, and errors.
 
 **Typical Flow**:
 1. `/add "Fix X"` - Report bug
-2. `/add-context` - Provide context (optional)
-3. `/triage-bug` - Diagnose root cause
-4. `/plan-fix` - Create fix checklist
-5. `/verify` - Verify fix plan against coding standards (recommended)
+2. `/ai.add-context` - Provide context (optional)
+3. `/ai.triage-bug` - Diagnose root cause
+4. `/ai.plan-fix` - Create fix checklist
+5. `/ai.verify` - Verify fix plan against coding standards (recommended)
 6. Implement and test fix
-7. `/verify` - Verify implementation against plan and standards
+7. `/ai.verify` - Verify implementation against plan and standards
 
 ### Idea Workflow (Exploratory Refinement)
 For exploring and refining ideas before committing to implementation.
@@ -427,9 +427,9 @@ For exploring and refining ideas before committing to implementation.
 **States**: exploring → refined → shelved / converted
 
 **Typical Flow**:
-1. `/define-idea "idea description"` - Initialize idea, start Round 1 (Identify & Define)
+1. `/ai.define-idea "idea description"` - Initialize idea, start Round 1 (Identify & Define)
 2. Answer sequential questions about problem, context, success criteria
-3. `/define-idea {name}` - Continue to Round 2 (Test Assumptions & Explore Alternatives)
+3. `/ai.define-idea {name}` - Continue to Round 2 (Test Assumptions & Explore Alternatives)
 4. Answer questions testing desirability, viability, feasibility, usability, and risks
 5. Synthesize to `refined-idea.md` with recommendations
 6. Convert to feature/bug with `/add` or shelve for later
@@ -440,37 +440,37 @@ For exploring and refining ideas before committing to implementation.
 
 ### Universal Commands
 - `/add "description"` - Add new feature or bug
-- `/add-context [name]` - Add codebase/business context
-- `/clarify [name]` - Refine requirements through Q&A
-- `/set-current {name}` - Switch workflow context
-- `/help [name]` - Show this help
+- `/ai.add-context [name]` - Add codebase/business context
+- `/ai.clarify [name]` - Refine requirements through Q&A
+- `/ai.set-current {name}` - Switch workflow context
+- `/ai.help [name]` - Show this help
 
 ### Setup Commands
-- `/define-tech-stack` - Define global tech stack (one-time setup)
-- `/define-coding-instructions` - Define coding standards and practices (one-time setup)
+- `/ai.define-tech-stack` - Define global tech stack (one-time setup)
+- `/ai.define-coding-instructions` - Define coding standards and practices (one-time setup)
 
 ### Quality Assurance Commands
-- `/verify [name]` - Verify implementation plan or code against coding standards
+- `/ai.verify [name]` - Verify implementation plan or code against coding standards
 
 ### Feature Commands
-- `/create-prd [name]` - Generate PRD from clarifications
-- `/update-feature [name]` - Update requirements after PRD
-- `/define-implementation-plan [name]` - Create phased implementation plan
-- `/execute [name]` - Execute implementation plan
+- `/ai.create-prd [name]` - Generate PRD from clarifications
+- `/ai.update-feature [name]` - Update requirements after PRD
+- `/ai.define-implementation-plan [name]` - Create phased implementation plan
+- `/ai.execute [name]` - Execute implementation plan
 
 ### Bug Commands
-- `/triage-bug [name]` - Diagnose root cause and fix approach
-- `/plan-fix [name]` - Create lightweight fix checklist
+- `/ai.triage-bug [name]` - Diagnose root cause and fix approach
+- `/ai.plan-fix [name]` - Create lightweight fix checklist
 
 ### Idea Commands
-- `/define-idea "description"` - Initialize new exploratory idea
-- `/define-idea [name]` - Continue refinement rounds
-- `/add-context [name]` - Add context to idea (optional)
-- `/clarify [name]` - Additional clarification for idea (optional)
+- `/ai.define-idea "description"` - Initialize new exploratory idea
+- `/ai.define-idea [name]` - Continue refinement rounds
+- `/ai.add-context [name]` - Add context to idea (optional)
+- `/ai.clarify [name]` - Additional clarification for idea (optional)
 
 ---
 
-**Tip**: Use `/help {workflow-name}` to see status for a specific workflow.
+**Tip**: Use `/ai.help {workflow-name}` to see status for a specific workflow.
 ```
 
 ### 8. Additional Formatting Guidelines
@@ -492,7 +492,7 @@ For exploring and refining ideas before committing to implementation.
 **User:**
 
 ```
-/help
+/ai.help
 ```
 
 **Script Output:**
@@ -524,7 +524,7 @@ You haven't set a current workflow context yet.
 **User:**
 
 ```
-/help user-auth
+/ai.help user-auth
 ```
 
 **Script Output:**
@@ -568,12 +568,12 @@ You haven't set a current workflow context yet.
 ## Next Steps
 
 ### Recommended Action
-✓ `/add-context` - Add codebase and business context
+✓ `/ai.add-context` - Add codebase and business context
 
 Adding context helps generate better requirements questions and ensures the PRD aligns with your existing architecture.
 
 ### Alternative Actions
-- `/clarify` - Start requirements gathering (consider adding context first)
+- `/ai.clarify` - Start requirements gathering (consider adding context first)
 
 {Rest of the help output...}
 ```
@@ -583,7 +583,7 @@ Adding context helps generate better requirements questions and ensures the PRD 
 **User:**
 
 ```
-/help
+/ai.help
 ```
 
 **Script Output:**
@@ -642,13 +642,13 @@ Phase 2 of 3: Export Service Implementation
 ## Next Steps
 
 ### Recommended Action
-✓ `/execute` - Continue implementing Phase 2: Export Service Implementation
+✓ `/ai.execute` - Continue implementing Phase 2: Export Service Implementation
 
 Follow the tasks defined in `implementation-plan/plan.md` for Phase 2.
 
 ### Alternative Actions
 - Review progress in `implementation-plan/plan-state.yml`
-- `/update-feature` - If requirements changed
+- `/ai.update-feature` - If requirements changed
 
 {Rest of the help output...}
 ```

@@ -9,18 +9,18 @@ You are adding a new work item. Classify the type and initialize appropriately.
 
 ### 1. Extract Description
 
-Parse the user's description from the `/add` command.
+Parse the user's description from the `/ai.add` command.
 
 If missing:
 
 ```
 Please provide a description:
 
-/add {description}
+/ai.add {description}
 
 Examples:
-  /add Fix timeout on login page
-  /add Allow users to reset their password
+  /ai.add Fix timeout on login page
+  /ai.add Allow users to reset their password
 ```
 
 ### 2. Classify Work Type
@@ -68,8 +68,8 @@ Created: .ai-workflow/bugs/login-timeout/
 Status: reported
 
 Next steps:
-  1. /add-context login-timeout — add relevant codebase context (optional)
-  2. /triage-bug login-timeout — diagnose root cause and plan fix
+  1. /ai.add-context login-timeout — add relevant codebase context (optional)
+  2. /ai.triage-bug login-timeout — diagnose root cause and plan fix
 ```
 
 **Example for feature:**
@@ -82,8 +82,8 @@ Created: .ai-workflow/features/user-password-reset/
 Status: clarifying
 
 Next steps:
-  1. /add-context user-password-reset — add relevant codebase context
-  2. /clarify user-password-reset — start requirements clarification
+  1. /ai.add-context user-password-reset — add relevant codebase context
+  2. /ai.clarify user-password-reset — start requirements clarification
 ```
 
 ---
@@ -93,7 +93,7 @@ Next steps:
 **User:**
 
 ```
-/add Fix timeout on login page
+/ai.add Fix timeout on login page
 ```
 
 **AI classifies:** bug (keyword "Fix")
@@ -119,6 +119,6 @@ Created: .ai-workflow/bugs/login-timeout/
 └── fix-plan.md (pending)
 
 Next steps:
-  1. /add-context login-timeout — add relevant codebase context (optional)
-  2. /triage-bug login-timeout — diagnose root cause and plan fix
+  1. /ai.add-context login-timeout — add relevant codebase context (optional)
+  2. /ai.triage-bug login-timeout — diagnose root cause and plan fix
 ```

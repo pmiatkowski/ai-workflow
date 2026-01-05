@@ -44,7 +44,7 @@ Your choice?
 
 ### 2. Sequential Tech Stack Questions
 
-Use the **sequential one-by-one format** (consistent with /clarify). Ask 7+ questions to gather comprehensive tech stack information.
+Use the **sequential one-by-one format** (consistent with /ai.clarify). Ask 7+ questions to gather comprehensive tech stack information.
 
 **Question 1/7+**
 
@@ -331,12 +331,12 @@ Summary:
   - {X} external integrations
 
 This tech stack will be automatically included when:
-  - Creating PRDs (/create-prd)
-  - Defining implementation plans (/define-implementation-plan)
+  - Creating PRDs (/ai.create-prd)
+  - Defining implementation plans (/ai.define-implementation-plan)
 
 Next steps:
   - Review .ai-workflow/memory/tech-stack.md
-  - Update as needed with /define-tech-stack
+  - Update as needed with /ai.define-tech-stack
   - Optionally define coding rules (see CLAUDE.md)
 ```
 

@@ -44,7 +44,7 @@ Your choice?
 
 ### 2. Sequential Coding Instructions Questions
 
-Use the **sequential one-by-one format** (consistent with /define-tech-stack). Ask 6+ questions to gather comprehensive coding standards information.
+Use the **sequential one-by-one format** (consistent with /ai.define-tech-stack). Ask 6+ questions to gather comprehensive coding standards information.
 
 **Question 1/6+**
 
@@ -358,8 +358,8 @@ _No category-specific rules defined yet. Add categories manually as needed._
 ## Usage
 
 These coding instructions are automatically referenced when:
-- Creating implementation plans (`/define-implementation-plan`)
-- Executing implementation phases (`/execute`)
+- Creating implementation plans (`/ai.define-implementation-plan`)
+- Executing implementation phases (`/ai.execute`)
 
 They are NOT included in PRDs, which focus on *what* to build rather than *how*.
 
@@ -370,7 +370,7 @@ They are NOT included in PRDs, which focus on *what* to build rather than *how*.
 To update these instructions, run:
 
 ```
-/define-coding-instructions
+/ai.define-coding-instructions
 ```
 
 Choose "Update existing" to modify specific sections.
@@ -405,13 +405,13 @@ Summary:
   - Documentation: {Comprehensive/Pragmatic/Minimal}
 
 This will be automatically included when:
-  - Defining implementation plans (/define-implementation-plan)
-  - Executing implementation phases (/execute)
+  - Defining implementation plans (/ai.define-implementation-plan)
+  - Executing implementation phases (/ai.execute)
 
 Next steps:
   - Review .ai-workflow/memory/coding-rules/index.md
   - Add category-specific rules manually (react/, typescript/, testing/)
-  - Update as needed with /define-coding-instructions
+  - Update as needed with /ai.define-coding-instructions
 ```
 
 **If update mode:**

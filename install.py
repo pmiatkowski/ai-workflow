@@ -122,10 +122,11 @@ def rename_workflow_folder(new_name):
 def update_file_contents(new_folder_name):
     """Replace .ai-workflow references in all files"""
     # Note: After renaming, files are now in the new folder
+    # Note: Prompt files use ai.*.prompt.md naming convention
     files_to_update = [
         f'{new_folder_name}/config.yml',
         f'{new_folder_name}/scripts/*.py',
-        f'{new_folder_name}/prompts/*.prompt.md',
+        f'{new_folder_name}/prompts/*.prompt.md',  # Matches both ai.*.prompt.md and any legacy *.prompt.md
         '.vscode/settings.json',
         'CLAUDE.md'
     ]
@@ -135,6 +136,9 @@ def update_file_contents(new_folder_name):
 
     for file_pattern in files_to_update:
         for file_path in glob_files(file_pattern):
+            # Only replace .ai-workflow folder references, not command prefixes
+            # Command prefixes (e.g., /ai.add) should remain unchanged
+            # This ensures idempotency - running install multiple times is safe
             replacements = replace_in_file(file_path, '.ai-workflow', new_folder_name)
             if replacements > 0:
                 total_replacements += replacements
@@ -202,11 +206,12 @@ def print_preview(folder_name):
     print("Preview of changes:")
     print("-" * 60)
     print(f"  Folder:    .ai-workflow -> {folder_name}")
-    print(f"  Files:     100+ references will be updated")
-    print(f"  Config:    config.yml, scripts/*.py, prompts/*.md")
+    print(f"  Files:     100+ folder references will be updated")
+    print(f"  Config:    config.yml, scripts/*.py, prompts/ai.*.prompt.md")
     print(f"  VSCode:    .vscode/settings.json")
     print(f"  Docs:      CLAUDE.md")
     print(f"  Marker:    .aiconfig will be created")
+    print(f"  Note:      Command prefixes (/ai.add, /ai.clarify) remain unchanged")
     print("-" * 60)
 
 

@@ -30,8 +30,8 @@ After completing each phase (or all phases), return control to the user.
 ## Usage
 
 ```
-User: /execute                    # Uses current context
-User: /execute {feature-name}     # Explicit feature
+User: /ai.execute                    # Uses current context
+User: /ai.execute {feature-name}     # Explicit feature
 ```
 
 ---
@@ -44,18 +44,18 @@ You are an implementation engineer executing a pre-defined plan. Your goal is to
 
 **Parameter resolution:**
 
-1. If user provided explicit name (`/execute feature-name`), use it
+1. If user provided explicit name (`/ai.execute feature-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If current context is a bug:
 
 ```
 ⚠ Current context is a bug, not a feature.
 
-Bugs use /plan-fix for lightweight planning instead of full implementation plans.
+Bugs use /ai.plan-fix for lightweight planning instead of full implementation plans.
 
 To work with a feature:
-  /set-current {feature-name}
-  /execute
+  /ai.set-current {feature-name}
+  /ai.execute
 ```
 
 1. If no current context:
@@ -64,8 +64,8 @@ To work with a feature:
 ⚠ No feature specified and no current context set.
 
 Please either:
-  1. Specify the feature name: /execute {name}
-  2. Set current context: /set-current {name}
+  1. Specify the feature name: /ai.execute {name}
+  2. Set current context: /ai.set-current {name}
 ```
 
 **Verify feature exists:**
@@ -81,7 +81,7 @@ If missing:
 ```
 ⚠ Implementation plan not found for '{feature-name}'.
 
-Run /define-implementation-plan first.
+Run /ai.define-implementation-plan first.
 ```
 
 ### 3. Read Plan State
@@ -100,7 +100,7 @@ phases:
 
 **Determine next action:**
 
-- If `status: completed`: All phases done, suggest `/update-feature` for changes
+- If `status: completed`: All phases done, suggest `/ai.update-feature` for changes
 - If `status: planning` or `in-progress`: Continue with execution
 
 ### 4. Ask User for Execution Mode
@@ -114,14 +114,14 @@ Current status: {status}
 Current phase: {current_phase} of {total_phases}
 Next phase: Phase {N}: {Phase Name} ({X} tasks)
 
-💡 Tip: Run /verify first to check plan against coding standards
+💡 Tip: Run /ai.verify first to check plan against coding standards
 
 How would you like to proceed?
 
 1. Execute Phase {N} only (Recommended)
    - Implement {X} tasks for {Phase Name}
    - Stop after phase for review
-   - Run /execute again for next phase
+   - Run /ai.execute again for next phase
 
 2. Execute entire plan (all {total_phases} phases)
    - Implement all remaining tasks automatically
@@ -243,9 +243,9 @@ Deliverables:
   - {deliverable}
 
 Next steps:
-  1. Run /verify to validate implementation against plan and standards (Recommended)
+  1. Run /ai.verify to validate implementation against plan and standards (Recommended)
   2. Review changes and test Phase {N} deliverables
-  3. Run /execute to continue with Phase {N+1}: {Next Phase Name}
+  3. Run /ai.execute to continue with Phase {N+1}: {Next Phase Name}
 ```
 
 ### 5B. Execute Entire Plan
@@ -297,7 +297,7 @@ Summary:
 Implementation complete. Feature is ready for testing.
 
 Next steps:
-  1. Run /verify to validate implementation against plan and standards (Recommended)
+  1. Run /ai.verify to validate implementation against plan and standards (Recommended)
   2. Run tests to verify deliverables
   3. Review changes
   4. Update feature state to 'in-progress' if needed
@@ -332,7 +332,7 @@ This is optional and depends on workflow preferences.
 **Single Phase Execution:**
 
 ```
-User: /execute user-auth
+User: /ai.execute user-auth
 
 ✓ Found implementation plan for 'user-auth'
 
@@ -345,7 +345,7 @@ How would you like to proceed?
 1. Execute Phase 1 only (Recommended)
    - Implement 6 tasks for Core Authentication
    - Stop after phase for review
-   - Run /execute again for Phase 2
+   - Run /ai.execute again for Phase 2
 
 2. Execute entire plan (all 3 phases)
    - Implement all 18 tasks automatically
@@ -420,7 +420,7 @@ Deliverables:
   - Sessions persist across page refresh
 
 Next steps:
-  Run /execute to continue with Phase 2: Session Management
+  Run /ai.execute to continue with Phase 2: Session Management
   OR review changes and test Phase 1 deliverables before proceeding
 ```
 
@@ -430,8 +430,8 @@ Next steps:
 
 | Situation | Behavior |
 |-----------|----------|
-| Plan doesn't exist | Error: "Run /define-implementation-plan first" |
-| All phases complete | Error: "Plan already executed. Use /update-feature for changes." |
+| Plan doesn't exist | Error: "Run /ai.define-implementation-plan first" |
+| All phases complete | Error: "Plan already executed. Use /ai.update-feature for changes." |
 | Current phase in-progress | Ask: resume current phase or start over? |
 | Task is ambiguous | Pause and ask user for clarification |
 | Dependency not met | Error with dependency name and guidance |

@@ -10,18 +10,18 @@ You are creating a simple fix plan checklist.
 
 **Parameter resolution:**
 
-1. If user provided explicit name (`/plan-fix bug-name`), use it
+1. If user provided explicit name (`/ai.plan-fix bug-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If current context is a feature:
 
 ```
 ⚠ Current context is a feature, not a bug.
 
-Features use /define-implementation-plan instead of /plan-fix.
+Features use /ai.define-implementation-plan instead of /ai.plan-fix.
 
 To plan a bug fix:
-  /set-current {bug-name}
-  /plan-fix
+  /ai.set-current {bug-name}
+  /ai.plan-fix
 ```
 
 1. If no current context:
@@ -30,8 +30,8 @@ To plan a bug fix:
 ⚠ No bug specified and no current context set.
 
 Please either:
-  1. Specify the bug name: /plan-fix {name}
-  2. Set current context: /set-current {name}
+  1. Specify the bug name: /ai.plan-fix {name}
+  2. Set current context: /ai.set-current {name}
 ```
 
 **Verify bug exists and triaged:**
@@ -43,7 +43,7 @@ If not found:
 ```
 ⚠ Bug must be triaged first.
 
-Run: /triage-bug
+Run: /ai.triage-bug
 ```
 
 ### 2. Read Triage Information
@@ -107,7 +107,7 @@ Ready to implement! The checklist is in:
 **User:**
 
 ```
-/plan-fix login-timeout
+/ai.plan-fix login-timeout
 ```
 
 **AI reads triage.md and context.md**

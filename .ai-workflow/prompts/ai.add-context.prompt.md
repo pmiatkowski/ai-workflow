@@ -10,7 +10,7 @@ You are helping the user document relevant context for a workflow. Your goal is 
 
 **Parameter resolution:**
 
-1. If user provided explicit name in command (`/add-context workflow-name`), use it
+1. If user provided explicit name in command (`/ai.add-context workflow-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If no current context set, error:
 
@@ -18,11 +18,11 @@ You are helping the user document relevant context for a workflow. Your goal is 
 ⚠ No workflow specified and no current context set.
 
 Please either:
-  1. Specify the workflow name: /add-context {name}
-  2. Set current context: /set-current {name}
+  1. Specify the workflow name: /ai.add-context {name}
+  2. Set current context: /ai.set-current {name}
 
 Example:
-  /add-context user-auth
+  /ai.add-context user-auth
 ```
 
 **After determining name, verify it exists:**
@@ -34,7 +34,7 @@ If not found:
 ```
 ✗ Workflow '{name}' not found.
 
-Create it first: /add "{description}"
+Create it first: /ai.add "{description}"
 ```
 
 ### 2. Read Existing Context
@@ -131,8 +131,8 @@ Added:
 
 Next steps:
 
-- Run /add-context again to add more
-- Run /clarify to start requirements clarification
+- Run /ai.add-context again to add more
+- Run /ai.clarify to start requirements clarification
 
 ```
 
@@ -143,7 +143,7 @@ Next steps:
 **User:**
 ```
 
-/add-context user-auth
+/ai.add-context user-auth
 
 Here's what's relevant:
 
@@ -200,8 +200,8 @@ Added:
   - 2 technical constraints
 
 Next steps:
-  - Run /add-context again to add more
-  - Run /clarify to start requirements clarification
+  - Run /ai.add-context again to add more
+  - Run /ai.clarify to start requirements clarification
 ```
 
 ---

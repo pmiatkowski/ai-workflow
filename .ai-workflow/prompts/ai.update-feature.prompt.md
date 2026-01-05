@@ -10,18 +10,18 @@ You are managing a requirements change. Your goal is to capture the change, asse
 
 **Parameter resolution:**
 
-1. If user provided explicit name (`/update-feature feature-name`), use it
+1. If user provided explicit name (`/ai.update-feature feature-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If current context is a bug:
 
 ```
 ⚠ Current context is a bug, not a feature.
 
-Features have PRDs and updates. Bugs use /triage-bug and /plan-fix.
+Features have PRDs and updates. Bugs use /ai.triage-bug and /ai.plan-fix.
 
 To update a feature:
-  /set-current {feature-name}
-  /update-feature
+  /ai.set-current {feature-name}
+  /ai.update-feature
 ```
 
 1. If no current context:
@@ -30,8 +30,8 @@ To update a feature:
 ⚠ No feature specified and no current context set.
 
 Please either:
-  1. Specify the feature name: /update-feature {name}
-  2. Set current context: /set-current {name}
+  1. Specify the feature name: /ai.update-feature {name}
+  2. Set current context: /ai.set-current {name}
 ```
 
 **Verify feature exists:**
@@ -47,11 +47,11 @@ If not:
 ```
 ⚠ No PRD found for '{feature-name}'.
 
-Use /update-feature for changes after PRD is created.
+Use /ai.update-feature for changes after PRD is created.
 For initial development, use:
-  - /add-context to add context
-  - /clarify to refine requirements
-  - /create-prd to generate PRD
+  - /ai.add-context to add context
+  - /ai.clarify to refine requirements
+  - /ai.create-prd to generate PRD
 ```
 
 ### 2. Prompt for Change Description
@@ -133,11 +133,11 @@ This change affects:
 
 Severity: {Moderate | Major}
 
-Recommendation: Run /clarify {feature-name} to address:
+Recommendation: Run /ai.clarify {feature-name} to address:
   - {question 1}
   - {question 2}
 
-Then run /create-prd {feature-name} to regenerate PRD.
+Then run /ai.create-prd {feature-name} to regenerate PRD.
 
 Or if you're confident, I can update the PRD directly.
 ```
@@ -185,7 +185,7 @@ Changes made:
 
 {If clarification recommended}
 Next step:
-  Run /clarify {feature-name} to address open questions
+  Run /ai.clarify {feature-name} to address open questions
 ```
 
 ---
@@ -195,7 +195,7 @@ Next step:
 **User:**
 
 ```
-/update-feature user-auth
+/ai.update-feature user-auth
 
 We need to add support for OAuth with Google. Users should be able to login with their Google account as an alternative to email/password.
 ```
@@ -214,13 +214,13 @@ This is a significant scope addition that requires:
   - Google API integration
   - Account linking strategy (what if email exists?)
 
-Recommendation: Run /clarify user-auth to address:
+Recommendation: Run /ai.clarify user-auth to address:
   1. Should Google login create a new account or require existing account?
   2. How to handle email conflicts (Google email matches existing account)?
   3. Should users be able to link/unlink Google after registration?
   4. Is Google the only OAuth provider, or plan for others?
 
-Then run /create-prd user-auth to regenerate PRD with changes.
+Then run /ai.create-prd user-auth to regenerate PRD with changes.
 ```
 
 ---
@@ -230,7 +230,7 @@ Then run /create-prd user-auth to regenerate PRD with changes.
 **User:**
 
 ```
-/update-feature user-auth
+/ai.update-feature user-auth
 
 Change the session timeout from 24 hours to 12 hours for non-remembered sessions.
 ```

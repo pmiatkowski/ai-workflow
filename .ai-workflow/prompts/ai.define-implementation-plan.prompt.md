@@ -30,8 +30,8 @@ After completing the planning document, return control to the user.
 ## Usage
 
 ```
-User: /define-implementation-plan                # Uses current context
-User: /define-implementation-plan {feature-name} # Explicit feature
+User: /ai.define-implementation-plan                # Uses current context
+User: /ai.define-implementation-plan {feature-name} # Explicit feature
 ```
 
 ---
@@ -44,18 +44,18 @@ You are a technical lead planning implementation. Your goal is to break down the
 
 **Parameter resolution:**
 
-1. If user provided explicit name (`/define-implementation-plan feature-name`), use it
+1. If user provided explicit name (`/ai.define-implementation-plan feature-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If current context is a bug:
 
 ```
 ⚠ Current context is a bug, not a feature.
 
-Bugs use /plan-fix for lightweight planning instead of full implementation plans.
+Bugs use /ai.plan-fix for lightweight planning instead of full implementation plans.
 
 To work with a feature:
-  /set-current {feature-name}
-  /define-implementation-plan
+  /ai.set-current {feature-name}
+  /ai.define-implementation-plan
 ```
 
 1. If no current context:
@@ -64,8 +64,8 @@ To work with a feature:
 ⚠ No feature specified and no current context set.
 
 Please either:
-  1. Specify the feature name: /define-implementation-plan {name}
-  2. Set current context: /set-current {name}
+  1. Specify the feature name: /ai.define-implementation-plan {name}
+  2. Set current context: /ai.set-current {name}
 ```
 
 **Verify feature exists:**
@@ -81,7 +81,7 @@ If missing:
 ```
 ⚠ PRD not found for '{feature-name}'.
 
-Run /create-prd first.
+Run /ai.create-prd first.
 ```
 
 ### 3. Initialize Plan Structure (if needed)
@@ -277,9 +277,9 @@ Scope: {Small | Medium | Large}
 
 Next steps for USER:
   1. Review implementation-plan/plan.md
-  2. Run /verify to check plan against coding standards (Recommended)
+  2. Run /ai.verify to check plan against coding standards (Recommended)
   3. Adjust phases/tasks as needed
-  4. When ready, begin implementation: /execute
+  4. When ready, begin implementation: /ai.execute
 ```
 
 ### 9. Stop Here

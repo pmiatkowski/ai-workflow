@@ -10,7 +10,7 @@ You are a requirements analyst. Your goal is to ask clarifying questions that wi
 
 **Parameter resolution:**
 
-1. If user provided explicit name in command (`/clarify workflow-name`), use it
+1. If user provided explicit name in command (`/ai.clarify workflow-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If no current context set, error:
 
@@ -18,11 +18,11 @@ You are a requirements analyst. Your goal is to ask clarifying questions that wi
 ⚠ No workflow specified and no current context set.
 
 Please either:
-  1. Specify the workflow name: /clarify {name}
-  2. Set current context: /set-current {name}
+  1. Specify the workflow name: /ai.clarify {name}
+  2. Set current context: /ai.set-current {name}
 
 Example:
-  /clarify user-auth
+  /ai.clarify user-auth
 ```
 
 **Verify workflow exists:**
@@ -34,7 +34,7 @@ If not found:
 ```
 ✗ Workflow '{name}' not found.
 
-Create it first: /add "{description}"
+Create it first: /ai.add "{description}"
 ```
 
 ### 2. Read Workflow Context
@@ -279,9 +279,9 @@ updated: {YYYY-MM-DD}
 Key decisions: {brief summary}
 
 Options:
-  - Run /clarify again if more questions needed
-  - Run /create-prd if ready to generate PRD (features only)
-  - Run /triage-bug if ready to diagnose (bugs only)
+  - Run /ai.clarify again if more questions needed
+  - Run /ai.create-prd if ready to generate PRD (features only)
+  - Run /ai.triage-bug if ready to diagnose (bugs only)
 ```
 
 **If resuming incomplete round:**
@@ -299,7 +299,7 @@ Resuming clarifications/round-{n} (continuing from Question {current}/{planned})
 **User:**
 
 ```
-/clarify user-auth
+/ai.clarify user-auth
 ```
 
 **AI reads:**
@@ -364,8 +364,8 @@ You can select A, B, or C, or provide your own answer.
 Key decisions: Email password reset, 5-attempt lockout with progressive delays, 24-hour sessions, integrate with existing user table, JWT token persistence.
 
 Options:
-  - Run /clarify again if more questions needed
-  - Run /create-prd if ready to generate PRD
+  - Run /ai.clarify again if more questions needed
+  - Run /ai.create-prd if ready to generate PRD
 ```
 
 **Final round-01.md file:**
@@ -421,7 +421,7 @@ Established core authentication requirements: email-based password reset, 5-atte
 | No previous clarifications | This is round-01 |
 | User says "enough" mid-round | Save partial answers, note incomplete |
 | User specifies `--questions N` | Ask exactly N questions |
-| All questions already answered | Suggest proceeding to /create-prd |
+| All questions already answered | Suggest proceeding to /ai.create-prd |
 | Feature doesn't exist | Error: "Feature '{name}' not found" |
 
 ---

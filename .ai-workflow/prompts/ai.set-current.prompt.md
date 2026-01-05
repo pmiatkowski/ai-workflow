@@ -15,11 +15,11 @@ If missing:
 ```
 Please specify which workflow to set as current:
 
-/set-current {name}
+/ai.set-current {name}
 
 Examples:
-  /set-current user-auth
-  /set-current login-timeout
+  /ai.set-current user-auth
+  /ai.set-current login-timeout
 ```
 
 ### 2. Execute Set-Current Script
@@ -27,14 +27,14 @@ Examples:
 Run:
 
 ```bash
-python .ai-workflow/scripts/set-current.py "{name}"
+python .ai-workflow/scripts/ai.set-current.py "{name}"
 ```
 
 Or with explicit type:
 
 ```bash
-python .ai-workflow/scripts/set-current.py "{name}" --type feature
-python .ai-workflow/scripts/set-current.py "{name}" --type bug
+python .ai-workflow/scripts/ai.set-current.py "{name}" --type feature
+python .ai-workflow/scripts/ai.set-current.py "{name}" --type bug
 ```
 
 ### 3. Confirm to User
@@ -47,8 +47,8 @@ python .ai-workflow/scripts/set-current.py "{name}" --type bug
 Status: {current-status}
 
 Next steps:
-  /add-context — add codebase context
-  /clarify — start requirements clarification
+  /ai.add-context — add codebase context
+  /ai.clarify — start requirements clarification
 ```
 
 **On error (not found):**
@@ -56,7 +56,7 @@ Next steps:
 ```
 ✗ Workflow '{name}' not found.
 
-Create it first: /add "{description}"
+Create it first: /ai.add "{description}"
 ```
 
 ---
@@ -65,12 +65,12 @@ Create it first: /add "{description}"
 
 **Example 1: Switch to existing feature**
 
-User: `/set-current user-auth`
+User: `/ai.set-current user-auth`
 
 AI executes:
 
 ```bash
-python .ai-workflow/scripts/set-current.py "user-auth"
+python .ai-workflow/scripts/ai.set-current.py "user-auth"
 ```
 
 AI responds:
@@ -81,18 +81,18 @@ AI responds:
 Status: clarifying
 
 Next steps:
-  /add-context — add codebase context
-  /clarify — start requirements clarification
+  /ai.add-context — add codebase context
+  /ai.clarify — start requirements clarification
 ```
 
 **Example 2: Switch to bug**
 
-User: `/set-current login-timeout`
+User: `/ai.set-current login-timeout`
 
 AI executes:
 
 ```bash
-python .ai-workflow/scripts/set-current.py "login-timeout"
+python .ai-workflow/scripts/ai.set-current.py "login-timeout"
 ```
 
 AI responds:
@@ -103,8 +103,8 @@ AI responds:
 Status: reported
 
 Next steps:
-  /add-context — add codebase context (optional)
-  /triage-bug — diagnose root cause
+  /ai.add-context — add codebase context (optional)
+  /ai.triage-bug — diagnose root cause
 ```
 
 ---
@@ -114,4 +114,4 @@ Next steps:
 - The `--type` parameter is optional; the script auto-detects if a workflow is a feature or bug
 - This command does NOT create new workflows; use `/add` for that
 - Current context is stored in `.ai-workflow/memory/global-state.yml`
-- All subsequent commands (`/clarify`, `/add-context`, etc.) will use this context when no explicit name is provided
+- All subsequent commands (`/ai.clarify`, `/ai.add-context`, etc.) will use this context when no explicit name is provided

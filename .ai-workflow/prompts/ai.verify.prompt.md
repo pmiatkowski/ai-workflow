@@ -31,9 +31,9 @@ After generating the report, return control to the user.
 ## Usage
 
 ```
-User: /verify                    # Uses current context, verifies plan
-User: /verify {workflow-name}    # Explicit workflow, verifies plan
-User: /verify {workflow-name} code  # Verify actual code implementation
+User: /ai.verify                    # Uses current context, verifies plan
+User: /ai.verify {workflow-name}    # Explicit workflow, verifies plan
+User: /ai.verify {workflow-name} code  # Verify actual code implementation
 ```
 
 ---
@@ -46,7 +46,7 @@ You are a quality assurance analyst verifying alignment between implementation a
 
 **Parameter resolution:**
 
-1. If user provided explicit name (`/verify feature-name` or `/verify bug-name`), use it
+1. If user provided explicit name (`/ai.verify feature-name` or `/ai.verify bug-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 
 ```yaml
@@ -61,8 +61,8 @@ current:
 ⚠ No workflow specified and no current context set.
 
 Please either:
-  1. Specify the workflow name: /verify {name}
-  2. Set current context: /set-current {name}
+  1. Specify the workflow name: /ai.verify {name}
+  2. Set current context: /ai.set-current {name}
 ```
 
 **Verify workflow exists:**
@@ -115,7 +115,7 @@ Please respond with 1 or 2.
   ```
   ⚠ Implementation plan not found for '{name}'.
 
-  Run /define-implementation-plan first.
+  Run /ai.define-implementation-plan first.
   ```
 
 **If workflow is a bug:**
@@ -124,7 +124,7 @@ Please respond with 1 or 2.
   ```
   ⚠ Fix plan not found for '{name}'.
 
-  Run /plan-fix first.
+  Run /ai.plan-fix first.
   ```
 
 **If workflow is an idea:**
@@ -132,9 +132,9 @@ Please respond with 1 or 2.
 ⚠ Ideas don't have implementation plans.
 
 To verify an idea:
-  1. Convert to feature: /add "Feature based on {idea-name}"
-  2. Create plan: /define-implementation-plan
-  3. Verify: /verify
+  1. Convert to feature: /ai.add "Feature based on {idea-name}"
+  2. Create plan: /ai.define-implementation-plan
+  3. Verify: /ai.verify
 ```
 
 **For Code Verification Mode:**
@@ -165,7 +165,7 @@ If missing:
 
 Cannot perform verification without standards. Options:
 
-1. Define coding standards: /define-coding-instructions
+1. Define coding standards: /ai.define-coding-instructions
 2. Skip verification for now
 
 A minimal report will be generated noting the absence of standards.
@@ -378,18 +378,18 @@ All loaded standards were applicable to this verification.
 **If FAIL (Critical issues found):**
 1. Address all critical issues before proceeding with implementation
 2. Update implementation plan or fix code as needed
-3. Re-run /verify to confirm issues are resolved
+3. Re-run /ai.verify to confirm issues are resolved
 4. Review coding standards at `coding-rules/`
 
 **If PASS WITH WARNINGS:**
 1. Consider addressing warnings before execution (recommended)
 2. Document any warnings you choose not to address
-3. Proceed with implementation: /execute
-4. Run /verify again after implementation to check code
+3. Proceed with implementation: /ai.execute
+4. Run /ai.verify again after implementation to check code
 
 **If PASS:**
-1. Proceed with implementation: /execute
-2. Run /verify after implementation to validate code against plan and standards
+1. Proceed with implementation: /ai.execute
+2. Run /ai.verify after implementation to validate code against plan and standards
 3. Keep coding standards in mind during development
 
 ---
@@ -460,7 +460,7 @@ Verdict: {PASS | PASS WITH WARNINGS | FAIL}
 Next steps:
   1. Review report: cat .ai-workflow/reports/verification-{name}-latest.report.md
   2. {If FAIL: Fix issues and re-verify}
-     {If PASS/WARNINGS: Proceed with /execute}
+     {If PASS/WARNINGS: Proceed with /ai.execute}
 ```
 
 ---
@@ -469,11 +469,11 @@ Next steps:
 
 | Situation | Behavior |
 |-----------|----------|
-| No coding standards exist | Generate minimal report with warning: "No standards defined. Run /define-coding-instructions first." Mark verdict as PASS (can't fail without standards). |
-| No implementation plan exists | For plan mode: Error and suggest /define-implementation-plan or /plan-fix. For code mode: Skip plan comparison. |
+| No coding standards exist | Generate minimal report with warning: "No standards defined. Run /ai.define-coding-instructions first." Mark verdict as PASS (can't fail without standards). |
+| No implementation plan exists | For plan mode: Error and suggest /ai.define-implementation-plan or /ai.plan-fix. For code mode: Skip plan comparison. |
 | Workflow is a bug | Use fix-plan.md instead of implementation-plan/plan.md. Apply simplified verification (bugs have lighter planning). |
 | Workflow is an idea | Error: Ideas don't have implementation plans. Suggest converting to feature first. |
-| No current context | Error: Require explicit workflow name or /set-current. |
+| No current context | Error: Require explicit workflow name or /ai.set-current. |
 | Reports directory doesn't exist | Create it automatically with mkdir. |
 | No discrepancies found | Generate PASS report with congratulations message. |
 | Coding rules incomplete | Use available rules, note missing categories in "Standards Not Applicable" section. |
@@ -491,7 +491,7 @@ Next steps:
 ### Scenario 1: Feature with Good Plan
 
 ```
-User: /verify user-authentication
+User: /ai.verify user-authentication
 
 AI: Reading implementation plan for 'user-authentication'...
 AI: Reading coding standards...
@@ -511,13 +511,13 @@ Report: .ai-workflow/reports/verification-user-authentication-20250103-143022.re
 
 Next steps:
   1. Review report
-  2. Proceed with /execute
+  2. Proceed with /ai.execute
 ```
 
 ### Scenario 2: Bug Fix Missing Tests
 
 ```
-User: /verify login-timeout
+User: /ai.verify login-timeout
 
 AI: Reading fix plan for 'login-timeout'...
 AI: Reading coding standards...
@@ -538,13 +538,13 @@ Critical: Fix plan missing test tasks (TDD methodology requires tests first)
 Next steps:
   1. Review report
   2. Fix critical issues
-  3. Re-verify: /verify
+  3. Re-verify: /ai.verify
 ```
 
 ### Scenario 3: No Coding Standards
 
 ```
-User: /verify new-feature
+User: /ai.verify new-feature
 
 AI: Reading implementation plan for 'new-feature'...
 AI: Checking coding standards...
@@ -558,8 +558,8 @@ Generating minimal report...
 Verdict: PASS (no standards to verify against)
 
 To enable full verification:
-  1. Define coding standards: /define-coding-instructions
-  2. Re-verify: /verify
+  1. Define coding standards: /ai.define-coding-instructions
+  2. Re-verify: /ai.verify
 ```
 
 ---

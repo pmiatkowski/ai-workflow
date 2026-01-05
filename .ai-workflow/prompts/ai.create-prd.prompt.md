@@ -10,18 +10,18 @@ You are a technical product manager. Your goal is to synthesize all gathered inf
 
 **Parameter resolution:**
 
-1. If user provided explicit name in command (`/create-prd feature-name`), use it
+1. If user provided explicit name in command (`/ai.create-prd feature-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If current context is a bug, error:
 
 ```
 ⚠ Current context is a bug, not a feature.
 
-Bugs use /triage-bug instead of /create-prd.
+Bugs use /ai.triage-bug instead of /ai.create-prd.
 
 To work with a feature:
-  /set-current {feature-name}
-  /create-prd
+  /ai.set-current {feature-name}
+  /ai.create-prd
 ```
 
 1. If no current context, error:
@@ -30,11 +30,11 @@ To work with a feature:
 ⚠ No feature specified and no current context set.
 
 Please either:
-  1. Specify the feature name: /create-prd {name}
-  2. Set current context: /set-current {name}
+  1. Specify the feature name: /ai.create-prd {name}
+  2. Set current context: /ai.set-current {name}
 
 Example:
-  /create-prd user-auth
+  /ai.create-prd user-auth
 ```
 
 **Verify feature exists:**
@@ -46,7 +46,7 @@ If not found:
 ```
 ✗ Feature '{name}' not found.
 
-Create it first: /add "{description}"
+Create it first: /ai.add "{description}"
 ```
 
 ### 2. Read All Feature Context
@@ -95,7 +95,7 @@ If not ready:
 Missing:
   - {list what's missing}
 
-Recommendation: Run /clarify to address gaps first.
+Recommendation: Run /ai.clarify to address gaps first.
 ```
 
 ### 4. Generate PRD
@@ -205,9 +205,9 @@ Summary:
 
 Next steps:
   1. Review prd.md
-  2. If changes needed: run /update-feature
+  2. If changes needed: run /ai.update-feature
   3. If approved: update state.yml status to 'prd-approved'
-  4. Then: run /define-implementation-plan
+  4. Then: run /ai.define-implementation-plan
 ```
 
 ---
@@ -283,6 +283,6 @@ None
 | Situation | Behavior |
 |-----------|----------|
 | Feature doesn't exist | Error: "Feature '{name}' not found" |
-| No clarifications yet | Warn and suggest running /clarify first |
+| No clarifications yet | Warn and suggest running /ai.clarify first |
 | PRD already exists | Ask: overwrite, create prd-v2.md, or cancel |
 | Many TBDs in clarifications | Generate PRD with TBD sections, note in summary |

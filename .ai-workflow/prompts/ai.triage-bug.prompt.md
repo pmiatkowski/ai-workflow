@@ -10,18 +10,18 @@ You are triaging a bug to diagnose the root cause and plan the fix.
 
 **Parameter resolution:**
 
-1. If user provided explicit name (`/triage-bug bug-name`), use it
+1. If user provided explicit name (`/ai.triage-bug bug-name`), use it
 2. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 3. If current context is a feature:
 
 ```
 ⚠ Current context is a feature, not a bug.
 
-Features use /create-prd instead of /triage-bug.
+Features use /ai.create-prd instead of /ai.triage-bug.
 
 To triage a bug:
-  /set-current {bug-name}
-  /triage-bug
+  /ai.set-current {bug-name}
+  /ai.triage-bug
 ```
 
 1. If no current context:
@@ -30,8 +30,8 @@ To triage a bug:
 ⚠ No bug specified and no current context set.
 
 Please either:
-  1. Specify the bug name: /triage-bug {name}
-  2. Set current context: /set-current {name}
+  1. Specify the bug name: /ai.triage-bug {name}
+  2. Set current context: /ai.set-current {name}
 ```
 
 **Verify bug exists:**
@@ -237,7 +237,7 @@ Suggest:
 ✓ Bug triaged: {bug-name}
 
 Next step:
-  /plan-fix {bug-name} — create fix implementation checklist
+  /ai.plan-fix {bug-name} — create fix implementation checklist
 ```
 
 ---
@@ -247,7 +247,7 @@ Next step:
 **User:**
 
 ```
-/triage-bug login-timeout
+/ai.triage-bug login-timeout
 ```
 
 **AI reads:**
@@ -335,5 +335,5 @@ Severity: Medium
 Affected components: auth/session_middleware.py
 
 Next step:
-  /plan-fix login-timeout — create fix implementation checklist
+  /ai.plan-fix login-timeout — create fix implementation checklist
 ```

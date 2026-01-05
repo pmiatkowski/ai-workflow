@@ -10,9 +10,9 @@ You are an objective thinking partner. Your goal is to help refine ideas through
 
 **Parameter resolution:**
 
-1. Check if user provided description in quotes: `/define-idea "Add AI search"`
+1. Check if user provided description in quotes: `/ai.define-idea "Add AI search"`
    - If yes: Extract description, generate kebab-case name, go to Step 2 (Initialize)
-2. If user provided explicit name: `/define-idea ai-search`, use it
+2. If user provided explicit name: `/ai.define-idea ai-search`, use it
 3. Otherwise, read current context from `.ai-workflow/memory/global-state.yml`
 4. If no current context set, error:
 
@@ -20,12 +20,12 @@ You are an objective thinking partner. Your goal is to help refine ideas through
 ⚠ No idea specified and no current context set.
 
 Please either:
-  1. Specify the idea name: /define-idea {name}
-  2. Create a new idea: /define-idea "description"
-  3. Set current context: /set-current {name}
+  1. Specify the idea name: /ai.define-idea {name}
+  2. Create a new idea: /ai.define-idea "description"
+  3. Set current context: /ai.set-current {name}
 
 Example:
-  /define-idea "Add AI-powered search to documentation"
+  /ai.define-idea "Add AI-powered search to documentation"
 ```
 
 **Generate kebab-case name (if description provided):**
@@ -268,7 +268,7 @@ updated: {YYYY-MM-DD}
 
 I have a better understanding of your idea now. Next, I'll help test some assumptions and explore alternatives.
 
-Run: /define-idea {name}
+Run: /ai.define-idea {name}
 ```
 
 ### 6. Round 2: Explore & Test Assumptions
@@ -629,13 +629,13 @@ updated: {YYYY-MM-DD}
 1. **Review the document**: .ai-workflow/ideas/{name}/refined-idea.md
 
 2. **Convert to feature** (if ready to build):
-   /add "{feature description based on idea}"
+   /ai.add "{feature description based on idea}"
 
 3. **Refine further** (if you want more exploration):
-   /define-idea {name}
+   /ai.define-idea {name}
 
 4. **Add context** (if you need to capture more information):
-   /add-context {name}
+   /ai.add-context {name}
 
 5. **Shelve for later** (if not the right time):
    Manually update status in state.yml to "shelved"
@@ -651,7 +651,7 @@ updated: {YYYY-MM-DD}
 **User:**
 
 ```
-/define-idea "Add AI-powered search to help users find documentation faster"
+/ai.define-idea "Add AI-powered search to help users find documentation faster"
 ```
 
 **AI (First Interaction):**
@@ -688,13 +688,13 @@ Please answer each question. If you're unsure about something, you can say "TBD"
 
 I have a better understanding of your idea now. Next, I'll help test some assumptions and explore alternatives.
 
-Run: /define-idea ai-powered-search
+Run: /ai.define-idea ai-powered-search
 ```
 
 **User:**
 
 ```
-/define-idea ai-powered-search
+/ai.define-idea ai-powered-search
 ```
 
 **AI (Round 2):**
@@ -773,7 +773,7 @@ synthesize
 1. **Review the document**: .ai-workflow/ideas/ai-powered-search/refined-idea.md
 
 2. **Convert to feature** (if ready to build):
-   /add "Implement semantic search with pgvector for documentation"
+   /ai.add "Implement semantic search with pgvector for documentation"
 
 This idea is ready to move forward. The problem is validated, the solution is technically feasible with your stack (pgvector), and the ROI is strong (15min × 50 searches/day = significant time savings). The hybrid approach (showing both AI and keyword results) addresses the trust risk.
 ```
