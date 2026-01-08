@@ -86,6 +86,22 @@ Next steps:
   2. /ai.clarify user-password-reset — start requirements clarification
 ```
 
+### 6. STOP AND WAIT
+
+**IMPORTANT: Your task ends here.**
+
+**Do NOT continue to the next steps automatically:**
+
+- Do NOT run `/ai.add-context`
+- Do NOT run `/ai.clarify`
+- Do NOT run `/ai.triage-bug`
+- Do NOT start implementing or coding
+- Do NOT ask follow-up questions about the workflow
+
+**Wait for the user to explicitly run one of the suggested next commands.**
+
+This is a step-by-step workflow where each command must be explicitly invoked by the user. Your role was to classify and initialize the workflow. The user will decide when to proceed.
+
 ---
 
 ## Example
