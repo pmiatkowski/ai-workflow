@@ -48,7 +48,41 @@ Create a kebab-case name from the description:
 - "Fix timeout on login page" → "login-timeout"
 - "Allow users to reset password" → "user-password-reset"
 
-### 4. Execute Init Script
+### 4. Check Global Context (Optional)
+
+Before initializing, check for relevant context to inform the user:
+
+**A. Check Tech Stack:**
+
+Check if `.ai-workflow/memory/tech-stack.md` exists (file existence only, don't read contents).
+
+**B. Find Related Features (FEATURES only, skip for bugs):**
+
+1. Use glob to find all PRDs: `.ai-workflow/features/*/prd.md`
+2. Extract feature names from paths (e.g., `.ai-workflow/features/user-auth/prd.md` → "user-auth")
+3. Use simple keyword matching:
+   - Split the new feature name by hyphens: "user-password-reset" → ["user", "password", "reset"]
+   - Split existing feature names by hyphens
+   - Count overlapping words (case-insensitive)
+   - If 1+ words overlap, consider it related
+   - Return top 1-2 matches (sorted by overlap count)
+
+**Example matching:**
+- New: "user-password-reset" → ["user", "password", "reset"]
+- Existing: "user-auth" → ["user", "auth"]
+- Overlap: ["user"] → 1 match → RELATED
+
+**Store findings for Step 6 (Confirmation).**
+
+**Error handling:**
+- If tech-stack.md doesn't exist → no error, continue
+- If no features exist → no error, continue
+- If no matches found → no error, continue
+- If glob fails → no error, continue
+
+**Important**: This context is ONLY for confirmation message. Do NOT modify `request.md` or `report.md` files.
+
+### 5. Execute Init Script
 
 Run:
 
@@ -56,9 +90,50 @@ Run:
 python .ai-workflow/scripts/init-workflow.py "{name}" "{description}" --type {type}
 ```
 
-### 5. Confirm to User
+### 6. Confirm to User (with Context)
 
-**Example for bug:**
+**Conditional Messaging:**
+
+Based on findings from Step 4, customize the confirmation message:
+
+**For Features:**
+- If tech stack exists AND related features found → show both
+- If tech stack exists only → show tech stack note
+- If related features found only → show related features note
+- If neither → use basic template (no context section)
+
+**For Bugs:**
+- If tech stack exists → show tech stack note
+- If not → use basic template (no context section)
+- Never show related features for bugs (not relevant)
+
+**Formatting Rules:**
+- Use 📚 emoji for "Context Available" section
+- Use 💡 emoji for helpful suggestions
+- Limit related features to top 2 matches
+- For related features, describe relationship: "(shares: user management)"
+- Keep formatting clean and scannable
+
+**Example for bug (WITH context):**
+
+```
+✓ Classified as: bug
+✓ Bug initialized: login-timeout
+
+Created: .ai-workflow/bugs/login-timeout/
+Status: reported
+
+📚 Context Available:
+  • Tech stack defined: .ai-workflow/memory/tech-stack.md
+
+💡 Consider referencing tech stack when adding context.
+
+Next steps:
+  1. /ai.add-context login-timeout — add relevant codebase context (optional)
+  2. /ai.triage-bug login-timeout — diagnose root cause and plan fix
+```
+
+**Example for bug (WITHOUT context):**
 
 ```
 ✓ Classified as: bug
@@ -72,7 +147,29 @@ Next steps:
   2. /ai.triage-bug login-timeout — diagnose root cause and plan fix
 ```
 
-**Example for feature:**
+**Example for feature (WITH context):**
+
+```
+✓ Classified as: feature
+✓ Feature initialized: user-password-reset
+
+Created: .ai-workflow/features/user-password-reset/
+Status: clarifying
+
+📚 Context Available:
+  • Tech stack defined: .ai-workflow/memory/tech-stack.md
+  • Related features found:
+    - user-auth (shares: user management)
+    - password-policy (shares: password requirements)
+
+💡 Consider reviewing related features when adding context in the next step.
+
+Next steps:
+  1. /ai.add-context user-password-reset — add relevant codebase context
+  2. /ai.clarify user-password-reset — start requirements clarification
+```
+
+**Example for feature (WITHOUT context):**
 
 ```
 ✓ Classified as: feature
@@ -86,7 +183,7 @@ Next steps:
   2. /ai.clarify user-password-reset — start requirements clarification
 ```
 
-### 6. STOP AND WAIT
+### 7. STOP AND WAIT
 
 **IMPORTANT: Your task ends here.**
 
@@ -137,4 +234,47 @@ Created: .ai-workflow/bugs/login-timeout/
 Next steps:
   1. /ai.add-context login-timeout — add relevant codebase context (optional)
   2. /ai.triage-bug login-timeout — diagnose root cause and plan fix
+```
+
+---
+
+## Example 2: Feature with Context
+
+**User:**
+
+```
+/ai.add Allow users to export their data to CSV
+```
+
+**AI classifies:** feature (keyword "Allow")
+
+**AI checks context:**
+- Tech stack exists: ✓
+- Related features: "user-data-import" (shares: user, data)
+
+**AI executes:**
+
+```bash
+python .ai-workflow/scripts/init-workflow.py "user-data-export" "Allow users to export their data to CSV" --type feature
+```
+
+**AI responds:**
+
+```
+✓ Classified as: feature
+✓ Feature initialized: user-data-export
+
+Created: .ai-workflow/features/user-data-export/
+Status: clarifying
+
+📚 Context Available:
+  • Tech stack defined: .ai-workflow/memory/tech-stack.md
+  • Related features found:
+    - user-data-import (shares: data handling, user features)
+
+💡 Consider reviewing related features when adding context in the next step.
+
+Next steps:
+  1. /ai.add-context user-data-export — add relevant codebase context
+  2. /ai.clarify user-data-export — start requirements clarification
 ```
