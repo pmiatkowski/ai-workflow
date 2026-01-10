@@ -22,10 +22,9 @@ The system uses a hybrid approach where:
 .ai-workflow/
 ├── config.yml              # Central configuration with workflow types
 ├── prompts/               # AI instruction templates
-│   ├── ai.add.prompt.md                      # Unified /ai.add command with AI classification
+│   ├── ai.add.prompt.md                      # Unified /ai.add with clarifications + PRD generation (all-in-one)
 │   ├── ai.add-context.prompt.md              # Add codebase/business context
-│   ├── ai.clarify.prompt.md                  # Requirements Q&A
-│   ├── ai.create-prd.prompt.md               # Synthesize PRD
+│   ├── ai.clarify.prompt.md                  # Post-PRD refinement through Q&A and direct updates
 │   ├── ai.define-coding-instructions.prompt.md  # Define coding standards
 │   ├── ai.define-idea.prompt.md              # Idea refinement and exploration
 │   ├── ai.define-implementation-plan.prompt.md  # Create implementation plan
@@ -35,7 +34,6 @@ The system uses a hybrid approach where:
 │   ├── ai.plan-fix.prompt.md                 # Lightweight bug fix planning
 │   ├── ai.set-current.prompt.md              # Set current workflow context
 │   ├── ai.triage-bug.prompt.md               # Bug diagnosis and root cause
-│   ├── ai.update-feature.prompt.md           # Handle post-PRD changes
 │   └── ai.verify.prompt.md                   # Verify implementation plan or code
 └── scripts/               # Python utilities
     ├── config.py          # Config loader with workflow type support
@@ -48,11 +46,9 @@ The system uses a hybrid approach where:
     ├── state.yml          # Status tracking
     ├── request.md         # Original description
     ├── context.md         # User-curated codebase context
-    ├── clarifications/    # Q&A rounds
-    │   └── round-{n}.md
-    ├── prd.md            # Generated requirements doc
-    ├── updates/          # Post-PRD change records
-    │   └── update-{n}.md
+    ├── clarifications/    # Optional: only for post-PRD refinements (legacy compatibility)
+    │   └── round-{n}.md   # (not used in unified /ai.add workflow)
+    ├── prd.md            # Generated requirements doc (created during /ai.add)
     └── implementation-plan/
         ├── plan-state.yml
         └── plan.md
@@ -145,7 +141,15 @@ The system uses a hybrid approach where:
 
 ### Overview
 
-The workflow uses a **sequential one-by-one question format** for all clarification-based prompts (`/ai.clarify`, `/ai.define-idea`, `/ai.triage-bug`). Instead of asking multiple questions at once, the AI asks ONE question at a time with THREE predefined options (A, B, C) plus the ability to provide a custom answer.
+The workflow uses a **sequential one-by-one question format** for all clarification-based prompts (`/ai.add`, `/ai.clarify`, `/ai.define-idea`, `/ai.triage-bug`). Instead of asking multiple questions at once, the AI asks ONE question at a time with THREE predefined options (A, B, C) plus the ability to provide a custom answer.
+
+**Note on Unified `/ai.add` Workflow:**
+
+The sequential clarification format is used in two contexts:
+1. **During `/ai.add`** for initial feature/bug creation - answers are stored in conversation history only and synthesized directly into the PRD (no round files created)
+2. **During `/ai.clarify`** for post-PRD refinement - answers are stored in conversation history, proposed changes shown to user, then PRD updated directly (no round files created)
+
+Clarification round files (`clarifications/round-{n}.md`) are only created for legacy compatibility with older workflows and are not used in the new unified `/ai.add` workflow.
 
 ### Question Format (Standardized)
 
@@ -369,22 +373,23 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 
 | Command | Type | Purpose | Script Invoked |
 |---------|------|---------|----------------|
-| `/ai.add-context {name}` | Prompt | Add codebase/business context | None |
-| `/ai.clarify {name}` | Prompt | Requirements Q&A | None |
-| `/ai.create-prd {name}` | Prompt | Synthesize PRD | None |
-| `/ai.update-feature {name}` | Prompt | Handle post-PRD changes | None |
+| `/ai.add-context {name}` | Prompt | Add codebase/business context (optional) | None |
+| `/ai.clarify {name}` | Prompt | Refine existing PRD through Q&A and direct updates (post-PRD only) | None |
 | `/define-implementation-plan {name}` | Prompt→Script | Create implementation plan | `init-impl-plan.py` |
 | `/ai.execute {name}` | Prompt→Script | Execute implementation plan | `update-plan-state.py` |
+
+**Note**: With the unified `/ai.add` workflow, features are created with inline clarifications and PRD generation in a single session. `/ai.create-prd` and `/ai.update-feature` have been removed - use `/ai.add` for new features and `/ai.clarify` for PRD refinements.
 
 ### Bug Workflow Commands
 
 | Command | Type | Purpose | Script Invoked |
 |---------|------|---------|----------------|
-| `/add {description}` | Prompt→Script | Initialize bug (AI-detected) | `init-workflow.py` |
+| `/ai.add {description}` | Prompt→Script | Initialize bug with inline clarifications (AI-detected) | `init-workflow.py` |
 | `/ai.add-context {name}` | Prompt | Add codebase context (optional) | None |
-| `/ai.clarify {name}` | Prompt | Clarification Q&A (optional) | None |
 | `/ai.triage-bug {name}` | Prompt | Diagnose root cause | None |
 | `/ai.plan-fix {name}` | Prompt | Create lightweight fix checklist | None |
+
+**Note**: Bugs are created with inline clarifications during `/ai.add`. Unlike features, bugs skip PRD generation and proceed directly to triage.
 
 ### Idea Workflow Commands
 
@@ -664,10 +669,10 @@ scripts/
 | **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` | `.ai-workflow/ideas/{name}/` |
 | **PRD Required** | ✓ Yes (full PRD) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
 | **Context** | ✓ context.md (recommended) | ✓ context.md (optional) | ✓ context.md (optional) |
-| **Clarifications** | ✓ clarifications/ (multi-round) | ✓ clarifications/ (optional) | ✓ refinement/ rounds (2-3 typical) |
+| **Clarifications** | ✓ Inline during `/ai.add` (conversation-based, no files) | ✓ Inline during `/ai.add` (conversation-based, no files) | ✓ refinement/ rounds (2-3 typical) |
 | **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist | ✗ No (pre-workflow exploration) |
 | **Verification** | ✓ /ai.verify (plan and code) | ✓ /ai.verify (fix-plan and code) | ✗ No verification support |
-| **Main Flow** | add → clarify → create-prd → plan → execute | add → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
+| **Main Flow** | add (with inline clarify + PRD) → approve → plan → execute | add (with inline clarify) → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
 
 ## Common Workflows
 
@@ -676,17 +681,24 @@ scripts/
 ```
 /ai.add "Add user profile with avatar upload"
 # AI classifies as feature, creates .ai-workflow/features/user-profile/
+# AI asks clarification questions one-by-one (5-7 questions)
+# User answers each question
+# AI generates prd.md automatically in same session
+# All done! Feature created with PRD in one workflow
 
-/ai.add-context user-profile
-# Provide: relevant models, routes, existing auth system
+# Review prd.md
 
+# Optional: if changes needed after reviewing PRD
 /ai.clarify user-profile
-# Answer AI's questions
+# AI reads PRD, asks clarifying questions
+# AI shows proposed changes
+# User confirms
+# AI updates prd.md directly
 
-/ai.create-prd user-profile
-# Review prd.md, update state.yml to prd-approved
+# When PRD is approved
+# Update state.yml status to 'prd-approved'
 
-/define-implementation-plan user-profile
+/ai.define-implementation-plan user-profile
 # AI creates multi-phase implementation plan
 
 /ai.execute user-profile
@@ -736,14 +748,6 @@ synthesize
 # User decides:
 /ai.add "Implement semantic search based on ai-powered-search idea"
 # Or: shelve for later, do more research, etc.
-```
-
-### Updating After PRD (Features Only)
-
-```
-/ai.update-feature user-profile
-# Describe changes
-# AI creates updates/update-{n}.md and may trigger new clarification
 ```
 
 ### Verifying Implementation
