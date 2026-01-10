@@ -86,6 +86,74 @@ python .ai-workflow/scripts/init-workflow.py "{name}" "{description}" --type {ty
 
 This creates the workflow structure and sets initial state.
 
+### 5A. Prompt for Context (Optional)
+
+**Purpose**: Give user opportunity to provide codebase/business context before clarification questions.
+
+**Ask user:**
+
+```
+Would you like to provide codebase context to inform the PRD and clarification questions?
+
+Context helps me:
+- Ask more relevant clarification questions
+- Generate a PRD aligned with your existing architecture
+- Suggest integration points with existing code
+
+You can provide:
+- Relevant files (paths + descriptions)
+- Business logic (rules, constraints, existing behavior)
+- Technical constraints (stack, dependencies, limitations)
+- Notes (any other relevant context)
+
+Answer: yes/no (or 'skip')
+```
+
+**If user responds 'yes':**
+
+1. Prompt: "Please provide the context (paste files, describe relevant code, or explain constraints):"
+2. Wait for user input
+3. Organize input into these sections:
+   - File paths → **Relevant Files**
+   - Business rules/constraints → **Business Logic**
+   - Tech stack mentions → **Technical Constraints**
+   - Everything else → **Notes**
+4. Write to context.md (`.ai-workflow/features/{name}/context.md` or `.ai-workflow/bugs/{name}/context.md`)
+5. Confirm: "✓ Context saved. This will inform clarification questions."
+
+**If user responds 'no' or 'skip':**
+
+- Continue to Step 6 without context
+
+**context.md Format** (from init-workflow.py template):
+
+```markdown
+# Context
+
+## Relevant Files
+- `path/to/file.ts` — {description from user}
+
+## Business Logic
+- {rule from user}
+
+## Technical Constraints
+- {constraint from user}
+
+## Notes
+{other notes from user}
+```
+
+**Only populate sections with content provided by user. Leave other sections with placeholder comments.**
+
+**Edge Cases:**
+
+| Situation | Behavior |
+|-----------|----------|
+| User provides unstructured text | Best-effort organization; unclear content → Notes |
+| User provides only file paths | Only populate Relevant Files |
+| User cancels after saying "yes" | Allow "skip"/"cancel" to abort |
+| Context already has content (rare) | Ask: merge/replace/cancel (use ai.add-context.prompt.md logic) |
+
 ### 6. Read Workflow Context
 
 Now read the created workflow context to inform clarification questions:
@@ -93,12 +161,12 @@ Now read the created workflow context to inform clarification questions:
 **For features**, read from `.ai-workflow/features/{name}/`:
 - `state.yml` - current status
 - `request.md` - original description
-- `context.md` - user will add context here later (likely empty now)
+- `context.md` - user-provided context (may have content if user chose to add context)
 
 **For bugs**, read from `.ai-workflow/bugs/{name}/`:
 - `state.yml` - current status
 - `report.md` - bug description
-- `context.md` - user will add context here later (likely empty now)
+- `context.md` - user-provided context (may have content if user chose to add context)
 
 **Read global context (if available)**:
 - `.ai-workflow/memory/tech-stack.md` - global tech stack (if exists from Step 4 check)
@@ -106,6 +174,17 @@ Now read the created workflow context to inform clarification questions:
 If tech-stack.md doesn't exist, proceed without it (no error).
 
 ### 7. Analyze Gaps and Plan Clarification Questions
+
+**IMPORTANT**: If context.md has content, use it to:
+- Understand existing architecture and integration points
+- Identify what's already known vs. what needs clarification
+- Align clarification questions with existing patterns and constraints
+- Avoid asking about information already provided
+
+Example:
+- If context.md lists relevant files → Reference them when asking integration questions
+- If context.md documents business rules → Avoid asking about rules already specified
+- If context.md specifies technical constraints → Respect them when presenting option trade-offs
 
 **For FEATURES:**
 
@@ -335,10 +414,9 @@ PRD Summary:
 
 Next steps:
   1. Review prd.md
-  2. Update context.md with codebase details (optional but recommended)
-  3. If changes needed: /ai.clarify {name} (refines PRD)
-  4. If approved: Update state.yml status to 'prd-approved'
-  5. Then: /ai.define-implementation-plan {name}
+  2. If changes needed: /ai.clarify {name} (refines PRD)
+  3. If approved: Update state.yml status to 'prd-approved'
+  4. Then: /ai.define-implementation-plan {name}
 ```
 
 **For BUGS (no PRD):**
@@ -363,8 +441,7 @@ Created: .ai-workflow/bugs/{name}/
 💡 Consider referencing tech stack when adding context.
 
 Next steps:
-  1. Update context.md with relevant codebase details (optional but recommended)
-  2. /ai.triage-bug {name} — diagnose root cause and plan fix
+  1. /ai.triage-bug {name} — diagnose root cause and plan fix
 ```
 
 **Important Formatting**:
@@ -395,7 +472,42 @@ Next steps:
 python .ai-workflow/scripts/init-workflow.py "user-data-export" "Allow users to export their data to CSV" --type feature
 ```
 
-**AI reads context** (request.md, tech-stack.md if exists)
+**AI prompts for context:**
+
+```
+Would you like to provide codebase context to inform the PRD and clarification questions?
+
+Context helps me:
+- Ask more relevant clarification questions
+- Generate a PRD aligned with your existing architecture
+- Suggest integration points with existing code
+
+You can provide:
+- Relevant files (paths + descriptions)
+- Business logic (rules, constraints, existing behavior)
+- Technical constraints (stack, dependencies, limitations)
+- Notes (any other relevant context)
+
+Answer: yes/no (or 'skip')
+```
+
+**User:** yes
+
+**AI:** Please provide the context (paste files, describe relevant code, or explain constraints):
+
+**User:**
+```
+We have existing import feature at src/features/import/
+Export should mirror import structure.
+
+Business rule: Exports rate-limited to 1 per hour per user.
+
+Using Node.js streams for large files.
+```
+
+**AI:** ✓ Context saved. This will inform clarification questions.
+
+**AI reads context** (request.md, context.md, tech-stack.md if exists)
 
 **AI identifies gaps** and plans 5 questions about export format, data scope, performance, authentication, download mechanism
 
@@ -471,10 +583,9 @@ PRD Summary:
 
 Next steps:
   1. Review prd.md
-  2. Update context.md with codebase details (optional but recommended)
-  3. If changes needed: /ai.clarify user-data-export
-  4. If approved: Update state.yml status to 'prd-approved'
-  5. Then: /ai.define-implementation-plan user-data-export
+  2. If changes needed: /ai.clarify user-data-export
+  3. If approved: Update state.yml status to 'prd-approved'
+  4. Then: /ai.define-implementation-plan user-data-export
 ```
 
 ---
@@ -495,7 +606,41 @@ Next steps:
 python .ai-workflow/scripts/init-workflow.py "websocket-memory-leak" "Fix memory leak in WebSocket handler" --type bug
 ```
 
-**AI reads context** (report.md, tech-stack.md if exists)
+**AI prompts for context:**
+
+```
+Would you like to provide codebase context to inform the PRD and clarification questions?
+
+Context helps me:
+- Ask more relevant clarification questions
+- Generate a PRD aligned with your existing architecture
+- Suggest integration points with existing code
+
+You can provide:
+- Relevant files (paths + descriptions)
+- Business logic (rules, constraints, existing behavior)
+- Technical constraints (stack, dependencies, limitations)
+- Notes (any other relevant context)
+
+Answer: yes/no (or 'skip')
+```
+
+**User:** yes
+
+**AI:** Please provide the context (paste files, describe relevant code, or explain constraints):
+
+**User:**
+```
+WebSocket handler is at src/services/websocket-handler.ts
+Using ws library v8.x
+Connection pool managed in src/services/connection-pool.ts
+
+Memory leak appears after ~1000 connections over 24 hours.
+```
+
+**AI:** ✓ Context saved. This will inform clarification questions.
+
+**AI reads context** (report.md, context.md, tech-stack.md if exists)
 
 **AI identifies gaps** and plans 4 questions about reproduction, symptoms, environment, scope
 

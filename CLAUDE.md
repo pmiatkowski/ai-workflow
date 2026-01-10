@@ -23,7 +23,6 @@ The system uses a hybrid approach where:
 ├── config.yml              # Central configuration with workflow types
 ├── prompts/               # AI instruction templates
 │   ├── ai.add.prompt.md                      # Unified /ai.add with clarifications + PRD generation (all-in-one)
-│   ├── ai.add-context.prompt.md              # Add codebase/business context
 │   ├── ai.clarify.prompt.md                  # Post-PRD refinement through Q&A and direct updates
 │   ├── ai.define-coding-instructions.prompt.md  # Define coding standards
 │   ├── ai.define-idea.prompt.md              # Idea refinement and exploration
@@ -373,7 +372,6 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 
 | Command | Type | Purpose | Script Invoked |
 |---------|------|---------|----------------|
-| `/ai.add-context {name}` | Prompt | Add codebase/business context (optional) | None |
 | `/ai.clarify {name}` | Prompt | Refine existing PRD through Q&A and direct updates (post-PRD only) | None |
 | `/define-implementation-plan {name}` | Prompt→Script | Create implementation plan | `init-impl-plan.py` |
 | `/ai.execute {name}` | Prompt→Script | Execute implementation plan | `update-plan-state.py` |
@@ -385,7 +383,6 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 | Command | Type | Purpose | Script Invoked |
 |---------|------|---------|----------------|
 | `/ai.add {description}` | Prompt→Script | Initialize bug with inline clarifications (AI-detected) | `init-workflow.py` |
-| `/ai.add-context {name}` | Prompt | Add codebase context (optional) | None |
 | `/ai.triage-bug {name}` | Prompt | Diagnose root cause | None |
 | `/ai.plan-fix {name}` | Prompt | Create lightweight fix checklist | None |
 
@@ -506,7 +503,6 @@ All workflow commands support optional parameters - you can omit the workflow na
 
 All follow-up commands support optional workflow names:
 
-- `/ai.add-context` → `/ai.add-context {name}`
 - `/ai.clarify` → `/ai.clarify {name}`
 - `/ai.create-prd` → `/ai.create-prd {name}` (features only)
 - `/ai.update-feature` → `/ai.update-feature {name}` (features only)
@@ -562,7 +558,7 @@ Commands validate workflow types automatically:
 ## Key Design Principles
 
 1. **User Controls Each Step**: No autonomous execution—user explicitly runs each command
-2. **Context Over Automation**: User provides context; AI doesn't scan codebase automatically
+2. **Context Over Automation**: User provides context during workflow creation; AI doesn't scan codebase automatically
 3. **Agent-Agnostic**: Works via copy-paste with any LLM (Claude, Copilot, etc.)
 4. **Version Controlled**: All artifacts (PRDs, clarifications) stored in git alongside code
 5. **Deterministic Scripts**: File operations use Python scripts for consistency
@@ -668,7 +664,7 @@ scripts/
 | **States** | clarifying → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
 | **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` | `.ai-workflow/ideas/{name}/` |
 | **PRD Required** | ✓ Yes (full PRD) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
-| **Context** | ✓ context.md (recommended) | ✓ context.md (optional) | ✓ context.md (optional) |
+| **Context** | ✓ Gathered during /ai.add (optional) | ✓ Gathered during /ai.add (optional) | ✓ context.md (optional) |
 | **Clarifications** | ✓ Inline during `/ai.add` (conversation-based, no files) | ✓ Inline during `/ai.add` (conversation-based, no files) | ✓ refinement/ rounds (2-3 typical) |
 | **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist | ✗ No (pre-workflow exploration) |
 | **Verification** | ✓ /ai.verify (plan and code) | ✓ /ai.verify (fix-plan and code) | ✗ No verification support |
@@ -681,6 +677,8 @@ scripts/
 ```
 /ai.add "Add user profile with avatar upload"
 # AI classifies as feature, creates .ai-workflow/features/user-profile/
+# AI asks: "Would you like to provide codebase context?" (yes/no)
+# (Optional) User provides context - AI organizes into context.md
 # AI asks clarification questions one-by-one (5-7 questions)
 # User answers each question
 # AI generates prd.md automatically in same session
@@ -712,9 +710,8 @@ scripts/
 ```
 /ai.add "Fix timeout on login page"
 # AI classifies as bug, creates .ai-workflow/bugs/login-timeout/
-
-/ai.add-context login-timeout  # Optional
-# Provide: authentication logic, session management files
+# AI asks: "Would you like to provide codebase context?" (yes/no)
+# (Optional) User provides authentication logic, session files
 
 /ai.triage-bug login-timeout
 # AI asks diagnostic questions, identifies root cause
@@ -827,7 +824,7 @@ mkdir -p .ai-workflow/memory/coding-rules/typescript
 - **Use `/add` command**: New unified command that auto-classifies features vs bugs
 - **AI Classification**: Analyze description for keywords (fix/bug/error → bug; add/implement/create → feature)
 - **Idea workflow is separate**: Ideas use `/ai.define-idea` command, not `/add` - they're pre-workflow exploration
-- **Don't auto-scan codebases**: Wait for user to provide context via `/ai.add-context`
+- **Don't auto-scan codebases**: Prompt user for context during `/ai.add`, but don't automatically scan
 - **Prompt files are instructions**: Read them fully before executing commands
 - **State transitions matter**: Check `state.yml` before running commands (e.g., PRD must exist before implementation plan)
 - **Workflow-specific states**: Features, bugs, and ideas each have different state transitions (see State Management section)

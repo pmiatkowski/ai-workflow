@@ -152,11 +152,8 @@ If `workflow_type == "bug"`:
 
 **Status: reported**
 
-- If `artifacts.context_md == false`:
-  - Primary: `/ai.add-context` - Add context (optional)
-  - Secondary: `/ai.triage-bug` - Start diagnosis
-- Else:
-  - Primary: `/ai.triage-bug` - Diagnose root cause
+- Primary: `/ai.triage-bug` - Diagnose root cause
+- Secondary: "Add more context by manually editing context.md if needed"
 
 **Status: triaged**
 
@@ -282,7 +279,6 @@ Phase {current_phase} of {total_phases}: {phase_name}
 
 ### Universal Commands
 - `/add "description"` - Add new feature or bug
-- `/ai.add-context [name]` - Add codebase/business context
 - `/ai.clarify [name]` - Refine existing PRD (post-PRD only, not for new features)
 - `/ai.set-current {name}` - Switch workflow context
 - `/ai.help [name]` - Show this help
@@ -392,7 +388,7 @@ For new functionality, enhancements, or capabilities.
 **States**: prd-draft → prd-approved → planning → in-progress
 
 **Typical Flow**:
-1. `/ai.add "feature description"` - Create feature with inline clarifications + PRD generation (all-in-one)
+1. `/ai.add "feature description"` - Create feature with optional context gathering + inline clarifications + PRD generation (all-in-one)
 2. Review prd.md
 3. `/ai.clarify` (optional) - Refine PRD if changes needed
 4. Update state.yml status to 'prd-approved'
@@ -407,13 +403,12 @@ For fixes, issues, and errors.
 **States**: reported → triaged → fixing → resolved → closed
 
 **Typical Flow**:
-1. `/add "Fix X"` - Report bug
-2. `/ai.add-context` - Provide context (optional)
-3. `/ai.triage-bug` - Diagnose root cause
-4. `/ai.plan-fix` - Create fix checklist
-5. `/ai.verify` - Verify fix plan against coding standards (recommended)
-6. Implement and test fix
-7. `/ai.verify` - Verify implementation against plan and standards
+1. `/add "Fix X"` - Report bug (with optional context gathering during creation)
+2. `/ai.triage-bug` - Diagnose root cause
+3. `/ai.plan-fix` - Create fix checklist
+4. `/ai.verify` - Verify fix plan against coding standards (recommended)
+5. Implement and test fix
+6. `/ai.verify` - Verify implementation against plan and standards
 
 ### Idea Workflow (Exploratory Refinement)
 For exploring and refining ideas before committing to implementation.
@@ -434,7 +429,6 @@ For exploring and refining ideas before committing to implementation.
 
 ### Universal Commands
 - `/add "description"` - Add new feature or bug
-- `/ai.add-context [name]` - Add codebase/business context
 - `/ai.clarify [name]` - Refine existing PRD (post-PRD only, not for new features)
 - `/ai.set-current {name}` - Switch workflow context
 - `/ai.help [name]` - Show this help
