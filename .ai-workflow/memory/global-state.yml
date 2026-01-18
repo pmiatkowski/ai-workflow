@@ -1,0 +1,7 @@
+version: 1
+current:
+  name: test-bug-auto
+  workflow_type: bug
+  set_date: 2026-01-18
+  set_method: auto
+last_updated: 2026-01-18

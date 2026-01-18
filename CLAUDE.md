@@ -43,11 +43,9 @@ The system uses a hybrid approach where:
 .ai-workflow/features/     # Feature workflow storage
 └── {feature-name}/
     ├── state.yml          # Status tracking
-    ├── request.md         # Original description
+    ├── request.md         # Original description + clarifications (## Clarifications section)
     ├── context.md         # User-curated codebase context
-    ├── clarifications/    # Optional: only for post-PRD refinements (legacy compatibility)
-    │   └── round-{n}.md   # (not used in unified /ai.add workflow)
-    ├── prd.md            # Generated requirements doc (created during /ai.add)
+    ├── prd.md            # Generated requirements doc (created via /ai.create-prd)
     └── implementation-plan/
         ├── plan-state.yml
         └── plan.md
@@ -57,8 +55,6 @@ The system uses a hybrid approach where:
     ├── state.yml          # Bug status tracking
     ├── report.md          # Bug description and reproduction steps
     ├── context.md         # Relevant codebase context (optional)
-    ├── clarifications/    # Optional Q&A rounds (if needed)
-    │   └── round-{n}.md
     ├── triage.md          # Root cause diagnosis and fix approach
     └── fix-plan.md        # Lightweight fix implementation checklist
 
@@ -145,10 +141,8 @@ The workflow uses a **sequential one-by-one question format** for all clarificat
 **Note on Unified `/ai.add` Workflow:**
 
 The sequential clarification format is used in two contexts:
-1. **During `/ai.add`** for initial feature/bug creation - answers are stored in conversation history only and synthesized directly into the PRD (no round files created)
-2. **During `/ai.clarify`** for post-PRD refinement - answers are stored in conversation history, proposed changes shown to user, then PRD updated directly (no round files created)
-
-Clarification round files (`clarifications/round-{n}.md`) are only created for legacy compatibility with older workflows and are not used in the new unified `/ai.add` workflow.
+1. **During `/ai.add`** for initial feature/bug creation - answers are appended to `request.md` under `## Clarifications` section (features only; bugs skip storage)
+2. **During `/ai.clarify`** for post-PRD refinement - answers are stored in conversation history, proposed changes shown to user, then PRD updated directly
 
 ### Question Format (Standardized)
 
@@ -221,7 +215,7 @@ If a clarification session is interrupted, the AI can resume by:
 Example:
 
 ```
-Resuming clarifications/round-01 (continuing from Question 3/5)...
+Resuming refinement/round-01 (continuing from Question 3/5)...
 
 Question 4/5+
 ...
@@ -372,11 +366,12 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 
 | Command | Type | Purpose | Script Invoked |
 |---------|------|---------|----------------|
-| `/ai.clarify {name}` | Prompt | Refine existing PRD through Q&A and direct updates (post-PRD only) | None |
+| `/ai.create-prd {name}` | Prompt | Generate PRD from clarified requirements | None |
+| `/ai.clarify {name}` | Prompt | Refine existing PRD through Q&A and direct updates | None |
 | `/define-implementation-plan {name}` | Prompt→Script | Create implementation plan | `init-impl-plan.py` |
 | `/ai.execute {name}` | Prompt→Script | Execute implementation plan | `update-plan-state.py` |
 
-**Note**: With the unified `/ai.add` workflow, features are created with inline clarifications and PRD generation in a single session. `/ai.create-prd` and `/ai.update-feature` have been removed - use `/ai.add` for new features and `/ai.clarify` for PRD refinements.
+**Note**: Features are created with `/ai.add` which handles initialization and clarifications. PRD generation is a separate step via `/ai.create-prd`. Use `/ai.clarify` for PRD refinements after the PRD exists.
 
 ### Bug Workflow Commands
 
@@ -427,7 +422,7 @@ The system supports three workflow types:
 Features transition through these states:
 
 ```
-clarifying → prd-draft → prd-approved → planning → in-progress
+clarifying → clarified → prd-draft → prd-approved → planning → in-progress
 ```
 
 **state.yml** tracks:
@@ -661,14 +656,14 @@ scripts/
 | Aspect | Feature Workflow | Bug Workflow | Idea Workflow |
 |--------|------------------|--------------|---------------|
 | **Command** | `/ai.add "Add X"` | `/ai.add "Fix X"` (auto-detected) | `/ai.define-idea "description"` (explicit) |
-| **States** | clarifying → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
+| **States** | clarifying → clarified → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
 | **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` | `.ai-workflow/ideas/{name}/` |
-| **PRD Required** | ✓ Yes (full PRD) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
+| **PRD Required** | ✓ Yes (via `/ai.create-prd`) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
 | **Context** | ✓ Gathered during /ai.add (optional) | ✓ Gathered during /ai.add (optional) | ✓ context.md (optional) |
-| **Clarifications** | ✓ Inline during `/ai.add` (conversation-based, no files) | ✓ Inline during `/ai.add` (conversation-based, no files) | ✓ refinement/ rounds (2-3 typical) |
+| **Clarifications** | ✓ Inline during `/ai.add` (appended to request.md) | ✓ Inline during `/ai.add` (conversation-based) | ✓ refinement/ rounds (2-3 typical) |
 | **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist | ✗ No (pre-workflow exploration) |
 | **Verification** | ✓ /ai.verify (plan and code) | ✓ /ai.verify (fix-plan and code) | ✗ No verification support |
-| **Main Flow** | add (with inline clarify + PRD) → approve → plan → execute | add (with inline clarify) → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
+| **Main Flow** | add (with inline clarify) → create-prd → approve → plan → execute | add (with inline clarify) → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
 
 ## Common Workflows
 
@@ -681,8 +676,13 @@ scripts/
 # (Optional) User provides context - AI organizes into context.md
 # AI asks clarification questions one-by-one (5-7 questions)
 # User answers each question
-# AI generates prd.md automatically in same session
-# All done! Feature created with PRD in one workflow
+# AI appends clarifications to request.md
+# Feature initialized and clarified!
+
+/ai.create-prd user-profile
+# AI reads request.md (includes clarifications), context.md
+# AI generates prd.md from all sources
+# PRD created!
 
 # Review prd.md
 
