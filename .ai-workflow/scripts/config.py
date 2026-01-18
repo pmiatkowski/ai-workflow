@@ -51,10 +51,23 @@ class CurrentContext:
 
 
 @dataclass
+class VerificationConfig:
+    """Verification commands configuration."""
+    commands: list = field(default_factory=list)
+
+
+@dataclass
+class WorkflowsConfig:
+    """Workflow execution configuration."""
+    verification: VerificationConfig = field(default_factory=VerificationConfig)
+
+
+@dataclass
 class Config:
     version: int = 1
     paths: PathsConfig = field(default_factory=PathsConfig)
     defaults: DefaultsConfig = field(default_factory=DefaultsConfig)
+    workflows: WorkflowsConfig = field(default_factory=WorkflowsConfig)
     workflow_types: dict = field(default_factory=dict)
     runner: str = "python"  # future: bash | powershell
     
@@ -102,6 +115,8 @@ class Config:
 
         paths_data = data.get("paths", {})
         defaults_data = data.get("defaults", {})
+        workflows_data = data.get("workflows", {})
+        verification_data = workflows_data.get("verification", {})
         workflow_types_data = data.get("workflow_types", {})
 
         # Parse workflow types
@@ -129,6 +144,11 @@ class Config:
             defaults=DefaultsConfig(
                 date_format=defaults_data.get("date_format", "%Y-%m-%d"),
                 workflow_type=defaults_data.get("workflow_type", "feature"),
+            ),
+            workflows=WorkflowsConfig(
+                verification=VerificationConfig(
+                    commands=verification_data.get("commands", []),
+                ),
             ),
             workflow_types=workflow_types,
             runner=data.get("runner", "python"),
@@ -309,7 +329,11 @@ if __name__ == "__main__":
     print(f"Config loaded:")
     print(f"  version: {cfg.version}")
     print(f"  paths.features: {cfg.paths.features}")
+    print(f"  paths.bugs: {cfg.paths.bugs}")
     print(f"  paths.prompts: {cfg.paths.prompts}")
     print(f"  paths.scripts: {cfg.paths.scripts}")
+    print(f"  paths.memory: {cfg.paths.memory}")
     print(f"  defaults.date_format: {cfg.defaults.date_format}")
+    print(f"  defaults.workflow_type: {cfg.defaults.workflow_type}")
+    print(f"  workflows.verification.commands: {cfg.workflows.verification.commands}")
     print(f"  runner: {cfg.runner}")

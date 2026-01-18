@@ -30,6 +30,7 @@ The system uses a hybrid approach where:
 │   ├── ai.define-tech-stack.prompt.md        # Define global tech stack
 │   ├── ai.execute.prompt.md                  # Execute implementation plan
 │   ├── ai.help.prompt.md                     # Show workflow status and next steps
+│   ├── ai.fix.prompt.md                      # Execute bug fix from fix-plan.md checklist
 │   ├── ai.plan-fix.prompt.md                 # Lightweight bug fix planning
 │   ├── ai.set-current.prompt.md              # Set current workflow context
 │   ├── ai.triage-bug.prompt.md               # Bug diagnosis and root cause
@@ -131,6 +132,13 @@ The system uses a hybrid approach where:
 - `allow_followups`: Enable dynamic follow-up questions (default: true)
 - `show_progress`: Display progress indicator like "Question 3/5+" (default: true)
 - `max_followups_per_round`: Limit follow-ups to prevent question explosion (default: 2)
+
+**Workflow Settings** (`workflows` section):
+
+- `workflows.verification.commands`: List of commands to run after bug fixes for verification
+  - Used by `/ai.fix` after completing fix tasks
+  - Example: `["npm run lint:fix", "npm run type-check", "npm run test"]`
+  - All commands must pass successfully for the fix to be marked as `resolved`
 
 ## Sequential Clarification System
 
@@ -380,6 +388,7 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 | `/ai.add {description}` | Prompt→Script | Initialize bug with inline clarifications (AI-detected) | `init-workflow.py` |
 | `/ai.triage-bug {name}` | Prompt | Diagnose root cause | None |
 | `/ai.plan-fix {name}` | Prompt | Create lightweight fix checklist | None |
+| `/ai.fix {name}` | Prompt | Execute bug fix from fix-plan.md checklist | None |
 
 **Note**: Bugs are created with inline clarifications during `/ai.add`. Unlike features, bugs skip PRD generation and proceed directly to triage.
 
@@ -718,7 +727,12 @@ scripts/
 
 /ai.plan-fix login-timeout
 # AI creates lightweight fix checklist
-# Ready to implement!
+
+/ai.fix login-timeout
+# AI executes fix tasks from fix-plan.md
+# Runs verification commands from config.yml
+# Updates bug state to resolved
+# Ready for testing!
 ```
 
 ### Creating an Idea
