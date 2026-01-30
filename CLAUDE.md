@@ -28,18 +28,25 @@ The system uses a hybrid approach where:
 │   ├── ai.define-idea.prompt.md              # Idea refinement and exploration
 │   ├── ai.define-implementation-plan.prompt.md  # Create implementation plan
 │   ├── ai.define-tech-stack.prompt.md        # Define global tech stack
+│   ├── ai.docs.prompt.md                     # Verify documentation against implementation
 │   ├── ai.execute.prompt.md                  # Execute implementation plan
 │   ├── ai.help.prompt.md                     # Show workflow status and next steps
 │   ├── ai.fix.prompt.md                      # Execute bug fix from fix-plan.md checklist
 │   ├── ai.plan-fix.prompt.md                 # Lightweight bug fix planning
 │   ├── ai.set-current.prompt.md              # Set current workflow context
 │   ├── ai.triage-bug.prompt.md               # Bug diagnosis and root cause
-│   └── ai.verify.prompt.md                   # Verify implementation plan or code
+│   ├── ai.verify.prompt.md                   # Verify implementation plan or code
+│   ├── ai.cleanup.prompt.md                  # Clean up all workflows and reset global state
+│   └── ai.create-pull-request.prompt.md      # Create PR with auto-generated title/body
 └── scripts/               # Python utilities
+    ├── cleanup.py         # Remove all workflows and reset global state
     ├── config.py          # Config loader with workflow type support
+    ├── create-pr.py       # Generate PR title/body and CLI command
+    ├── get-workflow-info.py # Gather workflow state information
     ├── init-workflow.py   # Generic workflow initialization (feature/bug/etc.)
     ├── init-impl-plan.py  # Create implementation plan structure
-    └── update-plan-state.py  # Update plan state during execution
+    ├── set-current.py     # Set current workflow context
+    └── update-plan-state.py  # Update plan state and feature state during execution
 
 .ai-workflow/features/     # Feature workflow storage
 └── {feature-name}/
@@ -140,6 +147,13 @@ The system uses a hybrid approach where:
   - Example: `["npm run lint:fix", "npm run type-check", "npm run test"]`
   - All commands must pass successfully for the fix to be marked as `resolved`
 
+**Pull Request Settings** (`pull_request` section):
+
+- `pull_request.tool`: CLI tool for creating PRs (`gh` for GitHub CLI, `az` for Azure DevOps CLI)
+- `pull_request.commit_convention`: Title format convention (`conventional` for `feat: description`, `ticket-prefix` for `[TICKET-123] Description`)
+- `pull_request.branch_format`: Branch naming convention (`conventional` or `ticket-prefix`)
+- `pull_request.default_base_branch`: Default target branch for PRs (default: `main`)
+
 ## Sequential Clarification System
 
 ### Overview
@@ -149,6 +163,7 @@ The workflow uses a **sequential one-by-one question format** for all clarificat
 **Note on Unified `/ai.add` Workflow:**
 
 The sequential clarification format is used in two contexts:
+
 1. **During `/ai.add`** for initial feature/bug creation - answers are appended to `request.md` under `## Clarifications` section (features only; bugs skip storage)
 2. **During `/ai.clarify`** for post-PRD refinement - answers are stored in conversation history, proposed changes shown to user, then PRD updated directly
 
@@ -370,6 +385,48 @@ All commands are prompts that users paste into AI agents. Scripts are invoked au
 
 **Note**: Verification analyzes implementation plans or actual code against coding standards defined in `.ai-workflow/memory/coding-rules/`. Reports are saved in `.ai-workflow/reports/` with timestamp history. This is a read-only operation that does not modify any files.
 
+### Documentation Command
+
+| Command                              | Type   | Purpose                                                    | Script Invoked |
+|--------------------------------------|--------|------------------------------------------------------------|----------------|
+| `/ai.docs`                           | Prompt | Verify docs reflect current implementation (current context) | None         |
+| `/ai.docs {name}`                    | Prompt | Verify docs for specific workflow                          | None           |
+| `/ai.docs --docs="file1.md,file2.md"` | Prompt | Verify specific documentation files                        | None           |
+
+**Note**: Documentation verification analyzes implemented features or fixed bugs against project documentation (CLAUDE.md, README.md, AGENTS.md, docs/ folder). The command:
+
+1. Reads workflow artifacts (request, PRD, implementation plan)
+2. Auto-discovers documentation files + accepts user-specified locations
+3. Identifies gaps (missing, outdated, incomplete documentation)
+4. Presents findings and **waits for explicit user instruction** before any edits
+5. Supports selective updates ("Update H-1 and M-2") or full updates
+
+This is a read-only analysis by default. All file modifications require explicit user approval.
+
+### Maintenance Commands
+
+| Command      | Type          | Purpose                                      | Script Invoked |
+|--------------|---------------|----------------------------------------------|----------------|
+| `/ai.cleanup` | Prompt→Script | Remove all workflows and reset global state | `cleanup.py`   |
+
+**Note**: This command removes all features, bugs, and ideas, then resets the global state to initial values. It requires explicit confirmation and shows a preview of what will be deleted before executing.
+
+### Pull Request Commands
+
+| Command | Type | Purpose | Script Invoked |
+|---------|------|---------|----------------|
+| `/ai.create-pull-request` | Prompt→Script | Create PR with auto-generated title/body (uses current context) | `create-pr.py` |
+| `/ai.create-pull-request {name}` | Prompt→Script | Create PR for specific workflow | `create-pr.py` |
+| `/ai.create-pull-request --custom` | Prompt→Script | Create PR with user-provided title/body | `create-pr.py` |
+
+**Note**: This command generates PR details based on `config.yml` settings:
+
+- **Conventional commits**: Title format `feat: description` or `fix: description`
+- **Ticket-prefix**: Title format `[TICKET-123] Description` (extracts ticket ID from folder name or branch)
+- Supports GitHub CLI (`gh`) and Azure DevOps CLI (`az`)
+- **Always requires user confirmation** before creating the PR
+- Body is auto-generated from PRD summary or implementation plan overview
+
 ### Feature Workflow Commands
 
 | Command | Type | Purpose | Script Invoked |
@@ -431,8 +488,16 @@ The system supports three workflow types:
 Features transition through these states:
 
 ```
-clarifying → clarified → prd-draft → prd-approved → planning → in-progress
+clarifying → clarified → prd-draft → prd-approved → planning → in-progress → in-review → completed
 ```
+
+**State Transitions During Execution:**
+
+| Event | state.yml Status |
+|-------|------------------|
+| First phase starts | `planning` → `in-progress` |
+| User chooses "Mark for review" | `in-progress` → `in-review` |
+| User chooses "Mark as completed" | `in-progress` or `in-review` → `completed` |
 
 **state.yml** tracks:
 
@@ -665,14 +730,14 @@ scripts/
 | Aspect | Feature Workflow | Bug Workflow | Idea Workflow |
 |--------|------------------|--------------|---------------|
 | **Command** | `/ai.add "Add X"` | `/ai.add "Fix X"` (auto-detected) | `/ai.define-idea "description"` (explicit) |
-| **States** | clarifying → clarified → prd-draft → prd-approved → planning → in-progress | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
+| **States** | clarifying → ... → planning → in-progress → in-review → completed | reported → triaged → fixing → resolved → closed | exploring → refined → shelved/converted |
 | **Storage** | `.ai-workflow/features/{name}/` | `.ai-workflow/bugs/{name}/` | `.ai-workflow/ideas/{name}/` |
 | **PRD Required** | ✓ Yes (via `/ai.create-prd`) | ✗ No (skip PRD) | ✗ No (refined-idea.md instead) |
 | **Context** | ✓ Gathered during /ai.add (optional) | ✓ Gathered during /ai.add (optional) | ✓ context.md (optional) |
 | **Clarifications** | ✓ Inline during `/ai.add` (appended to request.md) | ✓ Inline during `/ai.add` (conversation-based) | ✓ refinement/ rounds (2-3 typical) |
 | **Planning** | Multi-phase implementation-plan/ | Simple fix-plan.md checklist | ✗ No (pre-workflow exploration) |
 | **Verification** | ✓ /ai.verify (plan and code) | ✓ /ai.verify (fix-plan and code) | ✗ No verification support |
-| **Main Flow** | add (with inline clarify) → create-prd → approve → plan → execute | add (with inline clarify) → triage → plan-fix | define-idea (multi-round) → synthesize → convert to feature/bug |
+| **Main Flow** | add → create-prd → approve → plan → execute → review → complete | add → triage → plan-fix → fix | define-idea (multi-round) → synthesize → convert |
 
 ## Common Workflows
 
@@ -712,6 +777,11 @@ scripts/
 # Choose: single phase or entire plan
 # AI implements tasks exactly as specified in plan
 # Updates plan-state.yml after completion
+
+/ai.create-pull-request user-profile
+# AI generates PR title and body based on config.yml settings
+# Presents PR preview for user approval
+# User confirms, PR is created via gh or az CLI
 ```
 
 ### Creating a Bug Fix
@@ -733,6 +803,10 @@ scripts/
 # Runs verification commands from config.yml
 # Updates bug state to resolved
 # Ready for testing!
+
+/ai.create-pull-request login-timeout
+# AI generates PR title and body (e.g., "fix: login timeout")
+# User confirms, PR is created
 ```
 
 ### Creating an Idea

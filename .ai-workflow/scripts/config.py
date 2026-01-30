@@ -19,11 +19,13 @@ except ImportError:
 class PathsConfig:
     features: str = ".ai-workflow/features"
     bugs: str = ".ai-workflow/bugs"
+    ideas: str = ".ai-workflow/ideas"
     prompts: str = ".ai-workflow/prompts"
     scripts: str = ".ai-workflow/scripts"
     memory: str = ".ai-workflow/memory"
     tech_stack: str = ".ai-workflow/memory/tech-stack.md"
     coding_rules: str = ".ai-workflow/memory/coding-rules"
+    reports: str = ".ai-workflow/reports"
 
 
 @dataclass
@@ -63,11 +65,21 @@ class WorkflowsConfig:
 
 
 @dataclass
+class PullRequestConfig:
+    """Pull request creation configuration."""
+    tool: str = "gh"                          # gh | az
+    commit_convention: str = "conventional"   # conventional | ticket-prefix
+    branch_format: str = "conventional"       # conventional | ticket-prefix
+    default_base_branch: str = "main"
+
+
+@dataclass
 class Config:
     version: int = 1
     paths: PathsConfig = field(default_factory=PathsConfig)
     defaults: DefaultsConfig = field(default_factory=DefaultsConfig)
     workflows: WorkflowsConfig = field(default_factory=WorkflowsConfig)
+    pull_request: PullRequestConfig = field(default_factory=PullRequestConfig)
     workflow_types: dict = field(default_factory=dict)
     runner: str = "python"  # future: bash | powershell
     
@@ -117,6 +129,7 @@ class Config:
         defaults_data = data.get("defaults", {})
         workflows_data = data.get("workflows", {})
         verification_data = workflows_data.get("verification", {})
+        pull_request_data = data.get("pull_request", {})
         workflow_types_data = data.get("workflow_types", {})
 
         # Parse workflow types
@@ -135,11 +148,13 @@ class Config:
             paths=PathsConfig(
                 features=paths_data.get("features", ".ai-workflow/features"),
                 bugs=paths_data.get("bugs", ".ai-workflow/bugs"),
+                ideas=paths_data.get("ideas", ".ai-workflow/ideas"),
                 prompts=paths_data.get("prompts", ".ai-workflow/prompts"),
                 scripts=paths_data.get("scripts", ".ai-workflow/scripts"),
                 memory=paths_data.get("memory", ".ai-workflow/memory"),
                 tech_stack=paths_data.get("tech_stack", ".ai-workflow/memory/tech-stack.md"),
                 coding_rules=paths_data.get("coding_rules", ".ai-workflow/memory/coding-rules"),
+                reports=paths_data.get("reports", ".ai-workflow/reports"),
             ),
             defaults=DefaultsConfig(
                 date_format=defaults_data.get("date_format", "%Y-%m-%d"),
@@ -149,6 +164,12 @@ class Config:
                 verification=VerificationConfig(
                     commands=verification_data.get("commands", []),
                 ),
+            ),
+            pull_request=PullRequestConfig(
+                tool=pull_request_data.get("tool", "gh"),
+                commit_convention=pull_request_data.get("commit_convention", "conventional"),
+                branch_format=pull_request_data.get("branch_format", "conventional"),
+                default_base_branch=pull_request_data.get("default_base_branch", "main"),
             ),
             workflow_types=workflow_types,
             runner=data.get("runner", "python"),
@@ -161,6 +182,22 @@ class Config:
     def get_feature_path(self, feature_name: str) -> Path:
         """Get absolute path to a specific feature directory."""
         return self.get_features_path() / feature_name
+
+    def get_bugs_path(self) -> Path:
+        """Get absolute path to bugs directory."""
+        return Path(self.paths.bugs)
+
+    def get_bug_path(self, bug_name: str) -> Path:
+        """Get absolute path to a specific bug directory."""
+        return self.get_bugs_path() / bug_name
+
+    def get_ideas_path(self) -> Path:
+        """Get absolute path to ideas directory."""
+        return Path(self.paths.ideas)
+
+    def get_idea_path(self, idea_name: str) -> Path:
+        """Get absolute path to a specific idea directory."""
+        return self.get_ideas_path() / idea_name
 
     def get_workflow_type(self, type_name: str):
         """Get workflow type config, fallback to feature if not found."""
@@ -176,7 +213,7 @@ class Config:
         """Default feature workflow for backward compatibility."""
         return WorkflowTypeConfig(
             base_path="features",
-            states=["clarifying", "prd-draft", "prd-approved", "planning", "in-progress"],
+            states=["clarifying", "prd-draft", "prd-approved", "planning", "in-progress", "completed"],
             initial_state="clarifying",
             artifacts=["state.yml", "request.md", "context.md", "prd.md", "updates/", "implementation-plan/"],
             classification_keywords=[]
@@ -336,4 +373,8 @@ if __name__ == "__main__":
     print(f"  defaults.date_format: {cfg.defaults.date_format}")
     print(f"  defaults.workflow_type: {cfg.defaults.workflow_type}")
     print(f"  workflows.verification.commands: {cfg.workflows.verification.commands}")
+    print(f"  pull_request.tool: {cfg.pull_request.tool}")
+    print(f"  pull_request.commit_convention: {cfg.pull_request.commit_convention}")
+    print(f"  pull_request.branch_format: {cfg.pull_request.branch_format}")
+    print(f"  pull_request.default_base_branch: {cfg.pull_request.default_base_branch}")
     print(f"  runner: {cfg.runner}")

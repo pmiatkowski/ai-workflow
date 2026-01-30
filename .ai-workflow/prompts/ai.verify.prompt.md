@@ -55,7 +55,7 @@ current:
   workflow_type: feature|bug|idea
 ```
 
-3. If no current context:
+1. If no current context:
 
 ```
 ⚠ No workflow specified and no current context set.
@@ -81,37 +81,98 @@ Available workflows:
 
 ### 2. Determine Verification Mode
 
-**Default mode**: Plan verification
+**Step 1: Check for explicit mode in command**
 
-**Detect mode from:**
-1. User command includes "code" → Code verification mode
-2. User provides file paths → Code verification mode
-3. Otherwise → Plan verification mode (default)
+1. User command includes "code" → Code verification mode (skip to Step 3)
+2. User provides file paths → Code verification mode (skip to Step 3)
+3. Otherwise → Continue to Step 2
 
-Ask user to confirm mode if unclear:
+**Step 2: Detect implementation progress**
+
+Check if implementation has started by examining:
+
+**For features**, read `.ai-workflow/features/{name}/implementation-plan/plan-state.yml`:
+
+```yaml
+status: in-progress | completed  # Either indicates implementation started
+current_phase: N
+phases:
+  - name: Phase 1
+    status: completed | in-progress  # Either indicates work done
+```
+
+**Also check for completed tasks** in `plan.md` or `fix-plan.md`:
+
+- Search for `- [x]` (checked checkboxes) in the plan file
+- Any checked task indicates implementation has started
+
+**For bugs**, check `.ai-workflow/bugs/{name}/fix-plan.md`:
+
+- Search for `- [x]` (checked checkboxes)
+- Any checked task indicates implementation has started
+
+**Implementation detection summary:**
+
+| Indicator | Location | Condition |
+|-----------|----------|--------|
+| Plan state status | `plan-state.yml` | `status: in-progress` or `completed` |
+| Phase status | `plan-state.yml` | Any `phases[].status: in-progress` or `completed` |
+| Completed tasks | `plan.md` or `fix-plan.md` | Any `- [x]` checkboxes found |
+
+**Step 3: Determine prompt based on detection**
+
+**If implementation has NOT started** (no indicators found):
+
+Default to plan verification mode. Display:
 
 ```
 Found workflow: {name} ({workflow_type})
+Status: Planning (no implementation started)
 
-What would you like to verify?
-
-1. Implementation plan (default)
-   - Verify plan.md or fix-plan.md against coding standards
-
-2. Actual code implementation
-   - Verify source files against plan and coding standards
-   - You'll need to provide file paths to verify
-
-Please respond with 1 or 2.
+Proceeding with plan verification...
 ```
+
+**If implementation HAS started** (any indicator found):
+
+⚠️ **STOP AND WAIT for user input.** Display:
+
+```
+⚠️ Implementation in progress detected!
+
+Workflow: {name} ({workflow_type})
+Plan Status: {status from plan-state.yml or "Tasks started"}
+Progress: {X} of {Y} phases completed | {N} tasks completed
+
+Both the implementation plan AND code exist. What would you like to verify?
+
+1. Verify implementation plan only
+   - Check plan.md or fix-plan.md against coding standards
+   - Useful if plan was recently updated
+
+2. Verify code implementation (Recommended)
+   - Check source files against plan and coding standards
+   - You'll need to provide file paths
+
+3. Verify both plan and code
+   - Full verification of plan AND code against standards
+   - Most comprehensive option
+
+Please respond with 1, 2, or 3.
+```
+
+**STOP AND WAIT for user response before proceeding.**
+
+Do NOT continue until user provides their choice (1, 2, or 3).
 
 ### 3. Read Artifacts to Verify
 
 **For Plan Verification Mode:**
 
 **If workflow is a feature:**
+
 - Read `.ai-workflow/features/{name}/implementation-plan/plan.md`
 - If missing:
+
   ```
   ⚠ Implementation plan not found for '{name}'.
 
@@ -119,8 +180,10 @@ Please respond with 1 or 2.
   ```
 
 **If workflow is a bug:**
+
 - Read `.ai-workflow/bugs/{name}/fix-plan.md`
 - If missing:
+
   ```
   ⚠ Fix plan not found for '{name}'.
 
@@ -128,6 +191,7 @@ Please respond with 1 or 2.
   ```
 
 **If workflow is an idea:**
+
 ```
 ⚠ Ideas don't have implementation plans.
 
@@ -151,6 +215,32 @@ Example:
 ```
 
 Read the provided files.
+
+**For Both Mode (Plan + Code):**
+
+When user selects option 3 (verify both):
+
+1. First, read the plan artifact:
+   - For features: `.ai-workflow/features/{name}/implementation-plan/plan.md`
+   - For bugs: `.ai-workflow/bugs/{name}/fix-plan.md`
+
+2. Then, ask user for code file paths:
+
+```
+Plan loaded. Now provide the code file paths to verify (one per line, or comma-separated):
+
+Example:
+  src/auth/login.ts
+  src/auth/session.ts
+  tests/auth.test.ts
+```
+
+1. Read the provided code files.
+
+2. Verification will check:
+   - Plan against coding standards
+   - Code against coding standards
+   - Code against plan requirements (cross-verification)
 
 ### 4. Read Coding Standards
 
@@ -176,6 +266,7 @@ Generate a minimal PASS report and skip to step 7.
 **Step 2: Read coding standards hierarchy**
 
 Read in this order:
+
 1. `.ai-workflow/memory/coding-rules/index.md` - General principles and methodology
 2. Check for category-specific rules mentioned in index.md
 3. Read relevant category indices (e.g., `react/index.md`, `typescript/index.md`)
@@ -187,6 +278,7 @@ Read in this order:
 **Step 3: Organize standards for analysis**
 
 Group standards into categories:
+
 - **Development Methodology** (TDD, BDD, testing approach)
 - **Architectural Principles** (SOLID, DRY, patterns)
 - **Testing Requirements** (coverage, types of tests)
@@ -202,6 +294,7 @@ Group standards into categories:
 Compare the implementation plan/code against coding standards and identify discrepancies across three severity levels.
 
 **Critical Issues (Blocks Implementation):**
+
 - Plan/code violates architectural constraints from coding rules
 - Missing required testing strategy per standards (e.g., standards require TDD but plan has no test tasks)
 - Inconsistent with tech stack requirements (e.g., using wrong framework version)
@@ -209,6 +302,7 @@ Compare the implementation plan/code against coding standards and identify discr
 - Missing error handling when standards mandate it
 
 **Warnings (Should Address):**
+
 - Plan tasks don't reference relevant coding rules where they should
 - Naming conventions not aligned with standards
 - Incomplete documentation standards application
@@ -216,6 +310,7 @@ Compare the implementation plan/code against coding standards and identify discr
 - Code review requirements not addressed in plan
 
 **Info (Suggestions):**
+
 - Could leverage additional coding standards for better quality
 - Opportunities to enhance with best practices from standards
 - Alternative approaches mentioned in standards worth considering
@@ -224,6 +319,7 @@ Compare the implementation plan/code against coding standards and identify discr
 **Verification Checks by Mode:**
 
 **Plan Verification:**
+
 - Does each phase align with development methodology?
 - Are testing tasks included per testing standards?
 - Do architectural decisions match architectural principles?
@@ -232,6 +328,7 @@ Compare the implementation plan/code against coding standards and identify discr
 - Is error handling strategy consistent with standards?
 
 **Code Verification:**
+
 - Does code structure match architectural standards?
 - Are naming conventions followed?
 - Is test coverage adequate per standards?
@@ -414,12 +511,14 @@ All loaded standards were applicable to this verification.
 **Step 5: Create symlink to latest report**
 
 **On Windows:**
+
 ```bash
 # Create copy as "latest" (Windows may not support symlinks without admin)
 copy .ai-workflow\reports\verification-{name}-{timestamp}.report.md .ai-workflow\reports\verification-{name}-latest.report.md
 ```
 
 **On Linux/Mac:**
+
 ```bash
 # Create symlink
 ln -sf verification-{name}-{timestamp}.report.md .ai-workflow/reports/verification-{name}-latest.report.md
@@ -430,6 +529,7 @@ ln -sf verification-{name}-{timestamp}.report.md .ai-workflow/reports/verificati
 **Do NOT update workflow state** - verification is read-only and doesn't change workflow status.
 
 The workflow remains in its current state:
+
 - Features: prd-approved, planning, or in-progress
 - Bugs: reported, triaged, or fixing
 
@@ -470,6 +570,7 @@ Next steps:
 | Situation | Behavior |
 |-----------|----------|
 | No coding standards exist | Generate minimal report with warning: "No standards defined. Run /ai.define-coding-instructions first." Mark verdict as PASS (can't fail without standards). |
+| Plan exists + implementation started | Require explicit user choice (1=plan, 2=code, 3=both). Suggest code verification as recommended. STOP and WAIT for user input before proceeding. |
 | No implementation plan exists | For plan mode: Error and suggest /ai.define-implementation-plan or /ai.plan-fix. For code mode: Skip plan comparison. |
 | Workflow is a bug | Use fix-plan.md instead of implementation-plan/plan.md. Apply simplified verification (bugs have lighter planning). |
 | Workflow is an idea | Error: Ideas don't have implementation plans. Suggest converting to feature first. |
@@ -560,6 +661,58 @@ Verdict: PASS (no standards to verify against)
 To enable full verification:
   1. Define coding standards: /ai.define-coding-instructions
   2. Re-verify: /ai.verify
+```
+
+### Scenario 4: Implementation In Progress
+
+```
+User: /ai.verify user-authentication
+
+AI: Reading workflow 'user-authentication'...
+AI: Checking implementation progress...
+AI: Found plan-state.yml with status: in-progress
+AI: Found 8 completed tasks in plan.md
+
+⚠️ Implementation in progress detected!
+
+Workflow: user-authentication (feature)
+Plan Status: in-progress
+Progress: 2 of 4 phases completed | 8 tasks completed
+
+Both the implementation plan AND code exist. What would you like to verify?
+
+1. Verify implementation plan only
+   - Check plan.md against coding standards
+   - Useful if plan was recently updated
+
+2. Verify code implementation (Recommended)
+   - Check source files against plan and coding standards
+   - You'll need to provide file paths
+
+3. Verify both plan and code
+   - Full verification of plan AND code against standards
+   - Most comprehensive option
+
+Please respond with 1, 2, or 3.
+
+User: 2
+
+AI: Please provide the file paths to verify:
+
+User: src/auth/login.ts, src/auth/session.ts
+
+AI: Reading code files...
+AI: Reading coding standards...
+AI: Verifying code against standards and plan...
+
+✓ Verification complete for 'user-authentication'
+
+Verdict: PASS WITH WARNINGS
+- Critical issues: 0
+- Warnings: 3
+- Info: 2
+
+Report: .ai-workflow/reports/verification-user-authentication-20250130-143022.report.md
 ```
 
 ---

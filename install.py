@@ -66,11 +66,39 @@ def main():
         print(f"[ERROR] {folder_name} already exists")
         sys.exit(1)
 
-    # 6. Preview changes
-    print()
-    print_preview(folder_name)
+    # 6. Ask about installing commands
+    if interactive:
+        print()
+        install_commands_choice = input("Install commands to .claude/commands/? (y/n): ").strip().lower()
+        install_commands_flag = install_commands_choice in ['y', 'yes']
+    else:
+        install_commands_flag = False
 
-    # 7. Confirm
+    # 7. Ask about PR configuration
+    if interactive:
+        print()
+        print("Pull Request Configuration:")
+        pr_tool = input("  PR tool (gh/az) [gh]: ").strip().lower() or "gh"
+        if pr_tool not in ['gh', 'az']:
+            print(f"  [WARNING] Unknown tool '{pr_tool}', defaulting to 'gh'")
+            pr_tool = 'gh'
+        
+        pr_convention = input("  Commit convention (conventional/ticket-prefix) [conventional]: ").strip().lower() or "conventional"
+        if pr_convention not in ['conventional', 'ticket-prefix']:
+            print(f"  [WARNING] Unknown convention '{pr_convention}', defaulting to 'conventional'")
+            pr_convention = 'conventional'
+        
+        pr_base_branch = input("  Default base branch [main]: ").strip() or "main"
+    else:
+        pr_tool = "gh"
+        pr_convention = "conventional"
+        pr_base_branch = "main"
+
+    # 8. Preview changes
+    print()
+    print_preview(folder_name, install_commands_flag, pr_tool, pr_convention, pr_base_branch)
+
+    # 9. Confirm
     print()
     if interactive and not confirm("Proceed with installation?"):
         print("Installation cancelled.")
@@ -79,15 +107,19 @@ def main():
         print("Proceeding with installation (non-interactive mode)...")
         print()
 
-    # 8. Execute
+    # 10. Execute
     print()
     print("Installing...")
     print()
     try:
         rename_workflow_folder(folder_name)
         update_file_contents(folder_name)
+        update_pr_config(folder_name, pr_tool, pr_convention, pr_base_branch)
         update_vscode_settings(folder_name)
         create_config_marker(folder_name)
+        if install_commands_flag:
+            print()
+            install_commands(folder_name)
         print()
         print("=" * 60)
         print(f"[SUCCESS] Installation complete! Workflow folder: {folder_name}")
@@ -171,6 +203,26 @@ customizations:
     print("[OK] Created .aiconfig marker")
 
 
+def install_commands(workflow_folder):
+    """Copy prompt files to .claude/commands/"""
+    commands_dir = Path('.claude/commands')
+    prompts_dir = Path(workflow_folder) / 'prompts'
+
+    # Create .claude/commands directory if it doesn't exist
+    commands_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[OK] Created {commands_dir}")
+
+    # Copy all .prompt.md files
+    copied = 0
+    for prompt_file in prompts_dir.glob('*.prompt.md'):
+        dest = commands_dir / prompt_file.name
+        dest.write_text(prompt_file.read_text(encoding='utf-8'), encoding='utf-8')
+        print(f"[OK]   Copied {prompt_file.name}")
+        copied += 1
+
+    return copied
+
+
 # Helper functions
 
 def glob_files(pattern):
@@ -201,7 +253,7 @@ def replace_in_file(file_path, old_text, new_text):
         return 0
 
 
-def print_preview(folder_name):
+def print_preview(folder_name, install_commands_flag=False, pr_tool="gh", pr_convention="conventional", pr_base_branch="main"):
     """Show what will be changed"""
     print("Preview of changes:")
     print("-" * 60)
@@ -211,8 +263,49 @@ def print_preview(folder_name):
     print(f"  VSCode:    .vscode/settings.json")
     print(f"  Docs:      CLAUDE.md")
     print(f"  Marker:    .aiconfig will be created")
+    if install_commands_flag:
+        print(f"  Commands:  {folder_name}/prompts/ -> .claude/commands/ (yes)")
+    else:
+        print(f"  Commands:  {folder_name}/prompts/ -> .claude/commands/ (no)")
+    print(f"  PR Tool:   {pr_tool} ({'GitHub CLI' if pr_tool == 'gh' else 'Azure DevOps CLI'})")
+    print(f"  PR Style:  {pr_convention} commits, base branch: {pr_base_branch}")
     print(f"  Note:      Command prefixes (/ai.add, /ai.clarify) remain unchanged")
     print("-" * 60)
+
+
+def update_pr_config(folder_name, pr_tool, pr_convention, pr_base_branch):
+    """Update PR configuration in config.yml"""
+    config_path = Path(folder_name) / "config.yml"
+    if not config_path.exists():
+        print("[WARNING] config.yml not found - skipping PR config update")
+        return
+    
+    content = config_path.read_text(encoding='utf-8')
+    
+    # Update pull_request section values
+    content = re.sub(
+        r'(pull_request:\s*\n\s*tool:\s*)\S+',
+        f'\\1{pr_tool}',
+        content
+    )
+    content = re.sub(
+        r'(commit_convention:\s*)\S+',
+        f'\\1{pr_convention}',
+        content
+    )
+    content = re.sub(
+        r'(branch_format:\s*)\S+',
+        f'\\1{pr_convention}',
+        content
+    )
+    content = re.sub(
+        r'(default_base_branch:\s*)\S+',
+        f'\\1{pr_base_branch}',
+        content
+    )
+    
+    config_path.write_text(content, encoding='utf-8')
+    print(f"[OK] Updated PR configuration in config.yml")
 
 
 def confirm(message):
